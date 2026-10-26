@@ -1,0 +1,84 @@
+{
+  "mode": "quick",
+  "route": {
+    "origin": "MAD",
+    "originCity": "Madrid",
+    "destination": "JNB",
+    "destinationCity": "Johannesburg",
+    "departureDate": "2026-11-15",
+    "cabin": "business",
+    "adults": 1,
+    "legs": [
+      {
+        "origin": "MAD",
+        "destination": "JNB",
+        "departureDate": "2026-11-15"
+      }
+    ]
+  },
+  "cash": {
+    "amountEur": 2840,
+    "label": "Typical cash fare",
+    "dataSource": "sample",
+    "note": "Illustrative round-trip fare for the same cabin and dates."
+  },
+  "hacked": {
+    "amountEur": 612,
+    "label": "Avios + taxes",
+    "hackTitle": "Iberia Avios award",
+    "hackType": "award ticket",
+    "breakdown": {
+      "milesRequired": 85000,
+      "program": "Iberia Avios",
+      "taxesEur": 412
+    }
+  },
+  "savings": {
+    "amountEur": 2228,
+    "percent": 78,
+    "recommendation": "use_miles",
+    "headline": "Same trip. €2,228 less."
+  },
+  "explain": {
+    "summary": "Using 85,000 Avios and paying €412 in taxes replaces a €2,840 cash fare. The illustrative saving is €2,228.",
+    "centsPerMile": 2.62
+  },
+  "bookingSteps": [
+    {
+      "step": 1,
+      "title": "Confirm award availability",
+      "body": "Check that award seats are available for your dates before transferring or spending points.",
+      "href": "https://www.seatspy.com/",
+      "external": true
+    },
+    {
+      "step": 2,
+      "title": "Review the Avios price",
+      "body": "Compare the required Avios and taxes in your Iberia account, then confirm the total before booking.",
+      "href": "https://www.iberia.com/",
+      "external": true
+    },
+    {
+      "step": 3,
+      "title": "Book directly with the airline",
+      "body": "Pay the taxes in cash and use Avios for the award fare. Verify the final itinerary and cancellation terms.",
+      "url": "https://www.iberia.com/",
+      "linkLabel": "Book with Iberia"
+    }
+  ],
+  "alternativeHacks": [
+    {
+      "title": "Route via Barcelona",
+      "savingsEur": 180,
+      "note": "An alternate connection may reduce taxes or open more award seats.",
+      "hackType": "connection"
+    },
+    {
+      "title": "Shift dates by 3 days",
+      "savingsEur": 340,
+      "note": "Flexible dates can reveal lower-mileage award inventory.",
+      "hackType": "date shift"
+    }
+  ],
+  "disclaimer": "Prices and award availability are illustrative samples, not live offers. Confirm the final cash fare, miles, taxes, and terms with the provider before booking."
+}

@@ -1,0 +1,70 @@
+{
+  "mode": "quick",
+  "route": {
+    "origin": "MAD",
+    "originCity": "Madrid",
+    "destination": "JNB",
+    "destinationCity": "Johannesburg",
+    "departureDate": "2026-11-15",
+    "cabin": "business",
+    "adults": 1,
+    "legs": [
+      {
+        "origin": "MAD",
+        "destination": "JNB",
+        "departureDate": "2026-11-15"
+      }
+    ]
+  },
+  "cash": {
+    "amountEur": 2840,
+    "label": "Typical cash fare",
+    "dataSource": "sample",
+    "note": "Illustrative round-trip fare for the same cabin and dates."
+  },
+  "hacked": {
+    "amountEur": 2840,
+    "label": "Cash booking",
+    "hackTitle": "Pay cash",
+    "hackType": "cash",
+    "breakdown": {
+      "milesRequired": 0,
+      "program": "Cash fare",
+      "taxesEur": 0
+    }
+  },
+  "savings": {
+    "amountEur": 0,
+    "percent": 0,
+    "recommendation": "pay_cash",
+    "headline": "For this trip, cash is the smarter choice."
+  },
+  "explain": {
+    "summary": "In this example, the award option does not create a useful saving. Paying cash keeps your Avios available for a better redemption."
+  },
+  "bookingSteps": [
+    {
+      "step": 1,
+      "title": "Compare the final fare",
+      "body": "Check the airline’s total price, baggage, and change conditions before you buy.",
+      "href": "https://www.iberia.com/",
+      "external": true
+    },
+    {
+      "step": 2,
+      "title": "Keep your Avios for later",
+      "body": "Save your points for a route where the award price offers better value.",
+      "href": "https://www.iberia.com/",
+      "external": true
+    },
+    {
+      "step": 3,
+      "title": "Book the fare that works for you",
+      "body": "Review the complete itinerary and fare terms before confirming payment.",
+      "href": "https://www.iberia.com/",
+      "external": true
+    }
+  ],
+  "alternativeHacks": [],
+  "disclaimer": "This is an illustrative sample, not a live fare. Confirm the final cash price and terms with the airline before booking."
+}
