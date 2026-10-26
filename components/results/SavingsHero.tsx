@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from "framer-motion"
 
 import { Badge } from "@/components/ui/badge"
-import { formatEuro } from "@/lib/route-label"
+import { formatEuro, routeSummary } from "@/lib/route-label"
 import type { SearchResponse } from "@/lib/search-types"
 
 interface SavingsHeroProps {
@@ -13,6 +13,13 @@ interface SavingsHeroProps {
 
 export function SavingsHero({ result }: SavingsHeroProps) {
   const amount = result.savings.amountEur
+  const itineraryLabel = routeSummary(
+    result.route.legs ?? [{
+      origin: result.route.origin,
+      destination: result.route.destination,
+      departureDate: result.route.departureDate,
+    }],
+  )
   const count = useMotionValue(0)
   const formattedCount = useTransform(count, value =>
     Math.round(value).toLocaleString("en-GB"),
@@ -49,10 +56,10 @@ export function SavingsHero({ result }: SavingsHeroProps) {
             {result.savings.headline}
           </p>
           <p className="mt-2 text-sm text-white/65">
-            {result.route.origin} → {result.route.destination} · {result.route.adults} {result.route.adults === 1 ? "traveller" : "travellers"} · {result.route.cabin.replaceAll("_", " ")}
+            {itineraryLabel} · {result.route.adults} {result.route.adults === 1 ? "traveller" : "travellers"} · {result.route.cabin.replaceAll("_", " ")}
           </p>
         </div>
-        <Badge className="rounded-full border border-primary/35 bg-primary/15 px-3 py-1 text-primary-foreground">
+        <Badge className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-white">
           {result.savings.recommendation === "use_miles" ? "Use miles" : "Pay cash"}
           {result.savings.percent > 0 && ` · ${result.savings.percent}% less`}
         </Badge>

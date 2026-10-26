@@ -25,7 +25,7 @@ export function ResultsActionBar({ isSaved, isSaving, onSave }: ResultsActionBar
           onClick={onSave}
         >
           <BookmarkIcon data-icon="inline-start" aria-hidden="true" />
-          {isSaving ? "Saving…" : isSaved ? "Saved" : "Save this trip"}
+          {isSaving ? "Saving…" : isSaved ? "Saved" : "Save trip"}
         </Button>
       </div>
     </div>

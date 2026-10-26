@@ -74,7 +74,7 @@ export function PriceComparison({
               <CardTitle className="text-xl text-white">
                 {isCashExample ? "Pay cash" : "Hacked"}
               </CardTitle>
-              <Badge className="rounded-full border border-primary/35 bg-primary/15 text-primary-foreground">
+              <Badge className="rounded-full border border-white/20 bg-white/10 text-white">
                 {result.hacked.breakdown.program}
               </Badge>
             </div>

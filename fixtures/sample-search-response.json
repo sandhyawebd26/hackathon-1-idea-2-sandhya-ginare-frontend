@@ -62,8 +62,8 @@
       "step": 3,
       "title": "Book directly with the airline",
       "body": "Pay the taxes in cash and use Avios for the award fare. Verify the final itinerary and cancellation terms.",
-      "url": "https://www.iberia.com/",
-      "linkLabel": "Book with Iberia"
+      "href": "https://www.iberia.com/",
+      "external": true
     }
   ],
   "alternativeHacks": [
