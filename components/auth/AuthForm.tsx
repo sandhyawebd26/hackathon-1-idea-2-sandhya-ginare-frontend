@@ -32,17 +32,27 @@ interface AuthFormProps {
 
 function getAuthErrorMessage(error: unknown, mode: AuthMode) {
   const message = error instanceof Error ? error.message.toLowerCase() : ""
-  const status =
-    typeof error === "object" && error !== null && "status" in error
-      ? (error as { status?: unknown }).status
-      : undefined
+  const authError =
+    typeof error === "object" && error !== null
+      ? (error as { status?: unknown; code?: string; msg?: string })
+      : {}
+  const status = authError.status
+  const code = authError.code ?? ""
 
   if (message.includes("authentication is not configured")) {
     return "Account access is not available right now. You can still search and plan trips."
   }
 
-  if (status === 429 || message.includes("rate limit") || message.includes("too many requests")) {
-    return "Too many attempts. Please wait a moment and try again."
+  if (
+    code === "over_email_send_rate_limit" ||
+    status === 429 ||
+    message.includes("rate limit") ||
+    message.includes("too many requests") ||
+    message.includes("email rate limit")
+  ) {
+    return mode === "signup"
+      ? "Supabase has temporarily blocked signup emails (rate limit). In the Supabase dashboard turn off “Confirm email”, wait about an hour, or create a test user under Authentication → Users."
+      : "Too many sign-in attempts. Please wait a few minutes and try again."
   }
 
   if (message.includes("email not confirmed")) {
@@ -89,8 +99,6 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState("")
-  const [confirmationSent, setConfirmationSent] = useState(false)
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setFormError("")
@@ -147,29 +155,29 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
         return
       }
 
-      const emailRedirectTo =
-        process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-        `${window.location.origin}/auth/callback`
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo },
+      const signupResponse = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       })
+      const signupPayload = (await signupResponse.json().catch(() => null)) as {
+        ok?: boolean
+        error?: string
+      } | null
+      if (!signupResponse.ok) {
+        throw new Error(signupPayload?.error ?? "Could not create your account.")
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
 
       const user = toAuthUser(data.user)
-      if (data.session && user) {
-        await setUser(user)
-        toast.success("Account created")
-        router.replace(destination)
-        router.refresh()
-        return
-      }
+      if (!user) throw new Error("Account was created but sign-in failed. Try logging in.")
 
-      setConfirmationSent(true)
-      toast.success("Check your email", {
-        description: "Use the confirmation link to finish creating your account.",
-      })
+      await setUser(user)
+      toast.success("Account created")
+      router.replace(destination)
+      router.refresh()
     } catch (error) {
       const message = getAuthErrorMessage(error, mode)
       setFormError(message)
@@ -200,7 +208,9 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
       <Card variant="cream" className="border-border/80 shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg text-espresso">Account access</CardTitle>
-          <CardDescription>Email and password only. No phone number or payment details.</CardDescription>
+          <CardDescription>
+            Email and password only. Sign up is instant — no confirmation email.
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {!isSupabaseConfigured && (
@@ -212,20 +222,7 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
             </Alert>
           )}
 
-          {confirmationSent ? (
-            <div className="flex flex-col gap-4">
-              <Alert className="border-primary/25 bg-primary/10 text-foreground">
-                <AlertTitle>Check your email</AlertTitle>
-                <AlertDescription>
-                  Follow the confirmation link we sent to finish creating your account.
-                </AlertDescription>
-              </Alert>
-              <Button asChild variant="primary" size="lg" className="min-h-11 w-full">
-                <Link href={`/login?next=${encodeURIComponent(destination)}`}>Continue to log in</Link>
-              </Button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
               <FieldGroup className="gap-4">
                 <Field data-invalid={Boolean(fieldErrors.email)}>
                   <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -328,7 +325,6 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
                     : "Create account"}
               </Button>
             </form>
-          )}
         </CardContent>
         <CardFooter className="flex-col items-start gap-2 border-t border-border/70 pt-4">
           <p className="text-sm text-muted-foreground">

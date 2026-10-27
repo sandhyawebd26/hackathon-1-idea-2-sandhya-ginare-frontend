@@ -4,9 +4,13 @@ export type SpainCard = {
   id: string
   name: string
   issuer: string
-  earnSummary: string
-  transferNote: string
-  illustrative: boolean
+  monthlyFeeEur: number
+  annualFeeEur: number
+  earnRateDebit: number
+  earnRateDebitLabel: string
+  transferPartners: string[]
+  transferRatio: string
+  description: string
 }
 
 export function listSpainCards(): SpainCard[] {
@@ -15,7 +19,7 @@ export function listSpainCards(): SpainCard[] {
 
 export function catalogueMeta() {
   return {
-    version: cardsData.version,
-    note: cardsData.note,
+    version: cardsData.updatedAt ?? "illustrative",
+    note: "Illustrative card data for demo and MCP only.",
   }
 }
