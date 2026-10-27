@@ -17,13 +17,13 @@ interface SavedTripsGateProps {
 
 export function SavedTripsGate({ className }: SavedTripsGateProps) {
   return (
-    <Card variant="cream" className={cn("w-full border-border/80", className)}>
+    <Card variant="cream" className={cn("w-full border-brand-gold/15 bg-card/90 shadow-xl shadow-brand-ink/20", className)}>
       <CardHeader className="gap-3 pr-14">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
           Your travel notebook
         </p>
-        <CardTitle className="text-2xl leading-tight tracking-[-0.035em] text-espresso">
-          Sign in to save trips across devices
+        <CardTitle className="text-2xl leading-tight tracking-[-0.035em] text-brand-paper">
+          Sign in to keep your travel notebook
         </CardTitle>
         <CardDescription className="text-base leading-7">
           Create an account to keep the routes and comparisons you want to revisit.

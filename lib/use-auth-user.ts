@@ -19,11 +19,7 @@ export function useAuthUser() {
     if (typeof window === "undefined") return
 
     const supabase = createClient()
-    if (!supabase) {
-      const refreshDemoUser = () => void mutate()
-      window.addEventListener("storage", refreshDemoUser)
-      return () => window.removeEventListener("storage", refreshDemoUser)
-    }
+    if (!supabase) return
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       void mutate(toAuthUser(session?.user), { revalidate: false })

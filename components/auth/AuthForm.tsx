@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
+import { motion, useReducedMotion } from "framer-motion"
+import { ArrowRight, Bookmark, Plane, ShieldCheck } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -17,7 +19,7 @@ import {
 } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { createDemoAuthUser, toAuthUser } from "@/lib/auth-client"
+import { toAuthUser } from "@/lib/auth-client"
 import { createClient } from "@/lib/supabase/client"
 import { isSupabaseConfigured } from "@/lib/supabase/config"
 import { useAuthUser } from "@/lib/use-auth-user"
@@ -129,12 +131,7 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
       const supabase = createClient()
 
       if (!supabase) {
-        const demoUser = createDemoAuthUser(email)
-        await setUser(demoUser)
-        toast.success(mode === "login" ? "Welcome back" : "Account created")
-        router.replace(destination)
-        router.refresh()
-        return
+        throw new Error("Account access is not configured.")
       }
 
       if (mode === "login") {
@@ -187,155 +184,209 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
   const description =
     mode === "login"
       ? "Sign in to return to the routes and comparisons you saved."
-      : "Use your email to save the trips you want to come back to."
+      : "Build a travel notebook for the routes you want to revisit."
+  const shouldReduceMotion = Boolean(useReducedMotion())
+  const entrance = {
+    duration: shouldReduceMotion ? 0 : 0.5,
+    ease: [0.22, 1, 0.36, 1] as const,
+  }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-6 py-10 sm:py-14">
-      <header>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-          Traveler account
+    <div className="mx-auto grid w-full max-w-5xl flex-1 items-center gap-8 py-10 sm:py-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
+      <motion.section
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={entrance}
+        className="max-w-xl"
+      >
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold">
+          Your travel notebook
         </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-[-0.055em] text-espresso sm:text-5xl">
+        <h1 className="mt-4 font-display text-4xl leading-tight tracking-[-0.045em] text-brand-paper sm:text-5xl">
           {title}
         </h1>
-        <p className="mt-3 text-base leading-7 text-muted-foreground">{description}</p>
-      </header>
+        <p className="mt-4 max-w-lg text-base leading-7 text-muted-foreground sm:text-lg">
+          {description}
+        </p>
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="flex gap-4 rounded-2xl border border-white/10 bg-card/65 p-4 sm:p-5">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-gold/10 text-brand-gold">
+              <Bookmark aria-hidden="true" className="size-5" />
+            </span>
+            <div>
+              <h2 className="font-semibold text-brand-paper">Keep useful comparisons close</h2>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">Save the routes you want to compare again.</p>
+            </div>
+          </div>
+          <div className="flex gap-4 rounded-2xl border border-white/10 bg-card/65 p-4 sm:p-5">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-indigo/50 text-brand-gold">
+              <ShieldCheck aria-hidden="true" className="size-5" />
+            </span>
+            <div>
+              <h2 className="font-semibold text-brand-paper">Your booking stays yours</h2>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">Compare here, then confirm your fare directly with the provider.</p>
+            </div>
+          </div>
+        </div>
+        <Link href="/quick" className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-brand-gold">
+          <Plane aria-hidden="true" className="size-4" />
+          Keep exploring without an account
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </Link>
+      </motion.section>
 
-      <Card variant="cream" className="border-border/80 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg text-espresso">Account access</CardTitle>
-          <CardDescription>Email and password only. No phone number or payment details.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {!isSupabaseConfigured && (
-            <Alert className="border-primary/25 bg-primary/10 text-foreground">
-              <AlertTitle>Demo auth</AlertTitle>
-              <AlertDescription>Demo auth — add Supabase keys for real accounts.</AlertDescription>
-            </Alert>
-          )}
-
-          {confirmationSent ? (
-            <div className="flex flex-col gap-4">
-              <Alert className="border-primary/25 bg-primary/10 text-foreground">
-                <AlertTitle>Check your email</AlertTitle>
+      <motion.div
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...entrance, delay: shouldReduceMotion ? 0 : 0.1 }}
+      >
+        <Card variant="cream" className="border-white/10 bg-card/90 shadow-2xl shadow-brand-ink/35">
+          <CardHeader className="gap-3">
+            <div className="flex size-11 items-center justify-center rounded-2xl border border-brand-gold/25 bg-brand-gold/10 text-brand-gold">
+              <ShieldCheck aria-hidden="true" className="size-5" />
+            </div>
+            <CardTitle className="text-2xl text-brand-paper">Account access</CardTitle>
+            <CardDescription className="text-sm leading-6">
+              Email and password only. No phone number or payment details.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            {!isSupabaseConfigured && (
+              <Alert className="border-brand-gold/25 bg-brand-gold/10 text-brand-paper">
+                <AlertTitle>Account sign-in is unavailable</AlertTitle>
                 <AlertDescription>
-                  Follow the confirmation link we sent to finish creating your account.
+                  You can still compare flights without an account. Saved account features are not configured in this preview.
                 </AlertDescription>
               </Alert>
-              <Button asChild variant="primary" size="lg" className="min-h-11 w-full">
-                <Link href={`/login?next=${encodeURIComponent(destination)}`}>Continue to log in</Link>
-              </Button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-              <FieldGroup className="gap-4">
-                <Field data-invalid={Boolean(fieldErrors.email)}>
-                  <FieldLabel htmlFor="email">Email</FieldLabel>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    inputMode="email"
-                    required
-                    aria-invalid={Boolean(fieldErrors.email)}
-                    className="h-11"
-                  />
-                  <div className="min-h-5">
-                    {fieldErrors.email ? <FieldError>{fieldErrors.email}</FieldError> : null}
-                  </div>
-                </Field>
+            )}
 
-                <Field data-invalid={Boolean(fieldErrors.password)}>
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete={mode === "login" ? "current-password" : "new-password"}
-                    minLength={6}
-                    required
-                    aria-invalid={Boolean(fieldErrors.password)}
-                    className="h-11"
-                  />
-                  <div className="flex min-h-11 justify-end">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="min-h-11"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                      aria-pressed={showPassword}
-                      onClick={() => setShowPassword(current => !current)}
-                    >
-                      {showPassword ? "Hide" : "Show"}
-                    </Button>
-                  </div>
-                  <div className="min-h-5">
-                    {fieldErrors.password ? <FieldError>{fieldErrors.password}</FieldError> : null}
-                  </div>
-                </Field>
-
-                {mode === "signup" && (
-                  <Field data-invalid={Boolean(fieldErrors.confirmPassword)}>
-                    <FieldLabel htmlFor="confirmPassword">Confirm password</FieldLabel>
+            {confirmationSent ? (
+              <div className="flex flex-col gap-4">
+                <Alert className="border-brand-gold/25 bg-brand-gold/10 text-brand-paper">
+                  <AlertTitle>Check your email</AlertTitle>
+                  <AlertDescription>
+                    Follow the confirmation link we sent to finish creating your account.
+                  </AlertDescription>
+                </Alert>
+                <Button asChild variant="primary" size="lg" className="min-h-12 w-full rounded-full">
+                  <Link href={`/login?next=${encodeURIComponent(destination)}`}>Continue to log in</Link>
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+                <FieldGroup className="gap-4">
+                  <Field data-invalid={Boolean(fieldErrors.email)}>
+                    <FieldLabel htmlFor="email">Email</FieldLabel>
                     <Input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type={showConfirmation ? "text" : "password"}
-                      autoComplete="new-password"
+                      id="email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      inputMode="email"
+                      required
+                      aria-invalid={Boolean(fieldErrors.email)}
+                      className="h-12 rounded-xl border-white/10 bg-brand-ink/45 px-4"
+                    />
+                    <div className="min-h-5">
+                      {fieldErrors.email ? <FieldError>{fieldErrors.email}</FieldError> : null}
+                    </div>
+                  </Field>
+
+                  <Field data-invalid={Boolean(fieldErrors.password)}>
+                    <FieldLabel htmlFor="password">Password</FieldLabel>
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete={mode === "login" ? "current-password" : "new-password"}
                       minLength={6}
                       required
-                      aria-invalid={Boolean(fieldErrors.confirmPassword)}
-                      className="h-11"
+                      aria-invalid={Boolean(fieldErrors.password)}
+                      className="h-12 rounded-xl border-white/10 bg-brand-ink/45 px-4"
                     />
                     <div className="flex min-h-11 justify-end">
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="min-h-11"
-                        aria-label={showConfirmation ? "Hide confirmation password" : "Show confirmation password"}
-                        aria-pressed={showConfirmation}
-                        onClick={() => setShowConfirmation(current => !current)}
+                        className="min-h-11 text-muted-foreground hover:text-brand-paper"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        aria-pressed={showPassword}
+                        onClick={() => setShowPassword(current => !current)}
                       >
-                        {showConfirmation ? "Hide" : "Show"}
+                        {showPassword ? "Hide" : "Show"}
                       </Button>
                     </div>
                     <div className="min-h-5">
-                      {fieldErrors.confirmPassword ? (
-                        <FieldError>{fieldErrors.confirmPassword}</FieldError>
-                      ) : null}
+                      {fieldErrors.password ? <FieldError>{fieldErrors.password}</FieldError> : null}
                     </div>
                   </Field>
-                )}
-              </FieldGroup>
 
-              <div aria-live="polite" className="min-h-6">
-                {formError ? <p role="alert" className="text-sm text-destructive">{formError}</p> : null}
-              </div>
-              <Button type="submit" variant="primary" size="lg" className="min-h-11 w-full" disabled={isSubmitting}>
-                {isSubmitting
-                  ? mode === "login"
-                    ? "Logging in…"
-                    : "Creating account…"
-                  : mode === "login"
-                    ? "Log in"
-                    : "Create account"}
-              </Button>
-            </form>
-          )}
-        </CardContent>
-        <CardFooter className="flex-col items-start gap-2 border-t border-border/70 pt-4">
-          <p className="text-sm text-muted-foreground">
-            {mode === "login" ? "New to A Una Milla?" : "Already have an account?"}
-          </p>
-          <Button asChild variant="link" size="sm" className="min-h-11 px-0">
-            <Link href={alternateHref}>{mode === "login" ? "Sign up" : "Log in"}</Link>
-          </Button>
-          <p className="text-sm text-muted-foreground">You can search without an account.</p>
-        </CardFooter>
-      </Card>
+                  {mode === "signup" && (
+                    <Field data-invalid={Boolean(fieldErrors.confirmPassword)}>
+                      <FieldLabel htmlFor="confirmPassword">Confirm password</FieldLabel>
+                      <Input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type={showConfirmation ? "text" : "password"}
+                        autoComplete="new-password"
+                        minLength={6}
+                        required
+                        aria-invalid={Boolean(fieldErrors.confirmPassword)}
+                        className="h-12 rounded-xl border-white/10 bg-brand-ink/45 px-4"
+                      />
+                      <div className="flex min-h-11 justify-end">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="min-h-11 text-muted-foreground hover:text-brand-paper"
+                          aria-label={showConfirmation ? "Hide confirmation password" : "Show confirmation password"}
+                          aria-pressed={showConfirmation}
+                          onClick={() => setShowConfirmation(current => !current)}
+                        >
+                          {showConfirmation ? "Hide" : "Show"}
+                        </Button>
+                      </div>
+                      <div className="min-h-5">
+                        {fieldErrors.confirmPassword ? <FieldError>{fieldErrors.confirmPassword}</FieldError> : null}
+                      </div>
+                    </Field>
+                  )}
+                </FieldGroup>
+
+                <div aria-live="polite" className="min-h-6">
+                  {formError ? <p role="alert" className="text-sm text-destructive">{formError}</p> : null}
+                </div>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  className="min-h-12 w-full rounded-full"
+                  disabled={isSubmitting || !isSupabaseConfigured}
+                >
+                  {isSubmitting
+                    ? mode === "login"
+                      ? "Logging in…"
+                      : "Creating account…"
+                    : mode === "login"
+                      ? "Log in"
+                      : "Create account"}
+                </Button>
+              </form>
+            )}
+          </CardContent>
+          <CardFooter className="flex-col items-start gap-2 border-t border-white/10 pt-4">
+            <p className="text-sm text-muted-foreground">
+              {mode === "login" ? "New to A Una Milla?" : "Already have an account?"}
+            </p>
+            <Button asChild variant="link" size="sm" className="min-h-11 px-0">
+              <Link href={alternateHref}>{mode === "login" ? "Sign up" : "Log in"}</Link>
+            </Button>
+            <p className="text-sm text-muted-foreground">You can search without an account.</p>
+          </CardFooter>
+        </Card>
+      </motion.div>
     </div>
   )
 }

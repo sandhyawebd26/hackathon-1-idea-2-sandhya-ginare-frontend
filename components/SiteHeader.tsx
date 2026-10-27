@@ -9,7 +9,7 @@ import { Cross2Icon, HamburgerMenuIcon } from "@radix-ui/react-icons"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
-import { clearDemoAuthUser, type AuthUser } from "@/lib/auth-client"
+import type { AuthUser } from "@/lib/auth-client"
 import { createClient } from "@/lib/supabase/client"
 import { useAuthUser } from "@/lib/use-auth-user"
 import { cn } from "@/lib/utils"
@@ -102,12 +102,9 @@ export function SiteHeader() {
 
     try {
       const supabase = createClient()
-      if (supabase) {
-        const { error } = await supabase.auth.signOut()
-        if (error) throw error
-      } else {
-        clearDemoAuthUser()
-      }
+      if (!supabase) throw new Error("Account access is not configured.")
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
 
       await setUser(null)
       setMobileOpen(false)
