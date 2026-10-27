@@ -1,0 +1,24 @@
+{
+  "version": "2026-hackathon-illustrative",
+  "note": "Illustrative award taxes and surcharges (EUR). Confirm on the airline before transferring points.",
+  "routes": {
+    "MAD-JNB": {
+      "economy": 156,
+      "premium_economy": 268,
+      "business": 412,
+      "first": 520
+    },
+    "MAD-LHR": {
+      "economy": 95,
+      "premium_economy": 140,
+      "business": 210,
+      "first": 280
+    }
+  },
+  "defaultEur": {
+    "economy": 98,
+    "premium_economy": 185,
+    "business": 395,
+    "first": 510
+  }
+}
