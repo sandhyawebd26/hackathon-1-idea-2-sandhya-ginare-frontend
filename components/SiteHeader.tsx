@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowUpRight } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
+import { ArrowUpRight, Compass } from "lucide-react"
 import { Cross2Icon, HamburgerMenuIcon } from "@radix-ui/react-icons"
 import { toast } from "sonner"
 
@@ -16,7 +18,8 @@ const navigation = [
   { href: "/", label: "Home" },
   { href: "/quick", label: "Quick flight" },
   { href: "/trip", label: "Full trip" },
-  { href: "/saved", label: "Saved" },
+  { href: "/saved", label: "Saved trips" },
+  { href: "/chat", label: "Assistant" },
 ]
 
 interface SessionControlsProps {
@@ -75,7 +78,24 @@ function SessionControls({ user, isLoading, isSigningOut, mobile = false, onSign
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
+  const pathname = usePathname() ?? "/"
+  const shouldReduceMotion = Boolean(useReducedMotion())
   const { user, isLoading, setUser } = useAuthUser()
+
+  useEffect(() => {
+    if (!mobileOpen) return
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setMobileOpen(false)
+    }
+
+    window.addEventListener("keydown", closeOnEscape)
+    return () => window.removeEventListener("keydown", closeOnEscape)
+  }, [mobileOpen])
+
+  function isActive(href: string) {
+    return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
+  }
 
   async function handleSignOut() {
     setIsSigningOut(true)
@@ -100,42 +120,53 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 -mx-4 border-b border-border bg-background/95 px-4 backdrop-blur sm:-mx-6 sm:px-6">
-      <div className="mx-auto flex h-16 w-full items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 -mx-4 border-b border-white/8 bg-background/85 px-4 backdrop-blur-xl sm:-mx-6 sm:px-6">
+      <div className="mx-auto flex h-[4.5rem] w-full items-center justify-between gap-4">
         <Link
           href="/"
           aria-label="A Una Milla home"
-          className="flex min-w-0 flex-col gap-1 rounded-sm"
+          className="flex min-w-0 items-center gap-3 rounded-sm"
         >
-          <span className="text-[9px] font-semibold uppercase leading-none tracking-[0.19em] text-primary">
-            Travel hacking · Made simple
+          <span className="grid size-10 shrink-0 place-items-center rounded-2xl border border-brand-gold/30 bg-brand-indigo/40 text-brand-gold shadow-lg shadow-brand-indigo/20">
+            <Compass aria-hidden="true" className="size-5" strokeWidth={1.7} />
           </span>
-          <span className="text-[18px] font-semibold leading-none tracking-[-0.045em]">
-            A Una Milla
+          <span className="flex min-w-0 flex-col gap-1">
+            <span className="font-display text-lg font-semibold leading-none tracking-tight text-brand-paper">
+              A Una Milla
+            </span>
+            <span className="hidden text-[9px] font-semibold uppercase leading-none tracking-[0.16em] text-muted-foreground sm:block">
+              Same trip · smarter miles
+            </span>
           </span>
         </Link>
 
-        <nav aria-label="Main navigation" className="hidden items-center gap-1 md:flex">
-          {navigation.map(item => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "rounded-full px-3 py-2 text-sm font-medium transition-colors",
-                item.label === "Quick flight"
-                  ? "inline-flex items-center gap-2 bg-foreground px-4 text-background hover:bg-foreground/90"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground",
-              )}
-            >
-              {item.label}
-              {item.label === "Quick flight" && (
-                <ArrowUpRight aria-hidden="true" className="size-4" />
-              )}
-            </Link>
-          ))}
+        <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
+          {navigation.map(item => {
+            const active = isActive(item.href)
+            const isPrimary = item.href === "/quick"
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors",
+                  isPrimary
+                    ? "bg-primary px-4 text-primary-foreground shadow-sm shadow-brand-gold/10 hover:bg-primary/90"
+                    : active
+                      ? "bg-brand-indigo/40 text-brand-paper ring-1 ring-brand-indigo/70"
+                      : "text-muted-foreground hover:bg-white/5 hover:text-brand-paper",
+                )}
+              >
+                {item.label}
+                {isPrimary && <ArrowUpRight aria-hidden="true" className="size-4" />}
+              </Link>
+            )
+          })}
         </nav>
 
-        <div className="hidden shrink-0 md:block">
+        <div className="hidden shrink-0 lg:block">
           <SessionControls
             user={user}
             isLoading={isLoading}
@@ -148,7 +179,7 @@ export function SiteHeader() {
           type="button"
           variant="secondary"
           size="icon"
-          className="size-11 shrink-0 md:hidden"
+          className="size-11 shrink-0 lg:hidden"
           aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
           aria-expanded={mobileOpen}
           aria-controls="mobile-site-navigation"
@@ -162,43 +193,55 @@ export function SiteHeader() {
         </Button>
       </div>
 
-      {mobileOpen && (
-        <nav
-          id="mobile-site-navigation"
-          aria-label="Mobile navigation"
-          className="border-t border-border py-3 md:hidden"
-        >
-          <div className="flex flex-col gap-1">
-            {navigation.map(item => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "flex min-h-11 items-center justify-between rounded-xl px-3 text-sm font-medium transition-colors",
-                  item.label === "Quick flight"
-                    ? "bg-primary/10 text-foreground"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground",
-                )}
-              >
-                {item.label}
-                {item.label === "Quick flight" && (
-                  <ArrowUpRight aria-hidden="true" className="size-4" />
-                )}
-              </Link>
-            ))}
-          </div>
-          <div className="mt-3 border-t border-border pt-3">
-            <SessionControls
-              user={user}
-              isLoading={isLoading}
-              isSigningOut={isSigningOut}
-              mobile
-              onSignOut={handleSignOut}
-            />
-          </div>
-        </nav>
-      )}
+      <AnimatePresence initial={false}>
+        {mobileOpen && (
+          <motion.nav
+            id="mobile-site-navigation"
+            aria-label="Mobile navigation"
+            initial={shouldReduceMotion ? false : { height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.22, ease: "easeOut" }}
+            className="overflow-hidden border-t border-white/8 py-3 lg:hidden"
+          >
+            <div className="flex flex-col gap-1">
+              {navigation.map(item => {
+                const active = isActive(item.href)
+                const isPrimary = item.href === "/quick"
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex min-h-11 items-center justify-between rounded-xl px-3 text-sm font-medium transition-colors",
+                      isPrimary
+                        ? "bg-primary text-primary-foreground"
+                        : active
+                          ? "bg-brand-indigo/40 text-brand-paper"
+                          : "text-muted-foreground hover:bg-white/5 hover:text-brand-paper",
+                    )}
+                  >
+                    {item.label}
+                    {isPrimary && <ArrowUpRight aria-hidden="true" className="size-4" />}
+                  </Link>
+                )
+              })}
+            </div>
+            <div className="mt-3 border-t border-white/8 pt-3">
+              <SessionControls
+                user={user}
+                isLoading={isLoading}
+                isSigningOut={isSigningOut}
+                mobile
+                onSignOut={handleSignOut}
+              />
+            </div>
+          </motion.nav>
+        )}
+      </AnimatePresence>
     </header>
   )
 }

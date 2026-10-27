@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 
 import '@/app/globals.css'
 import { SiteHeader } from '@/components/SiteHeader'
+import { SiteFooter } from '@/components/SiteFooter'
 import { Providers } from '@/components/providers'
 import { Toaster } from '@/components/ui/sonner'
 import { cn } from '@/lib/utils'
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 sm:px-6">
               <SiteHeader />
               <main className="flex flex-1 flex-col">{children}</main>
+              <SiteFooter />
             </div>
           </div>
           <Toaster position="top-center" />
