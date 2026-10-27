@@ -36,24 +36,24 @@ export function ChatPanel({
 
   const exampleMessages = [
     {
-      heading: 'What are the',
-      subheading: 'trending memecoins today?',
-      message: `What are the trending memecoins today?`
+      heading: 'Madrid to Johannesburg',
+      subheading: 'Business for under €450',
+      message: `Find business class award flights from Madrid (MAD) to Johannesburg (JNB) on Iberia for under €450 in taxes.`
     },
     {
-      heading: 'What is the price of',
-      subheading: '$DOGE right now?',
-      message: 'What is the price of $DOGE right now?'
+      heading: 'Barcelona to New York',
+      subheading: 'Compare cash vs 68k Avios',
+      message: 'Compare cash price vs 68,000 Avios for business class from Barcelona (BCN) to New York (JFK).'
     },
     {
-      heading: 'I would like to buy',
-      subheading: '42 $DOGE',
-      message: `I would like to buy 42 $DOGE`
+      heading: 'Revolut Card Strategy',
+      subheading: 'Earn 85k Avios in 6 months',
+      message: `How can I earn 85,000 Avios in 6 months using my Revolut Metal card and everyday spending in Spain?`
     },
     {
-      heading: 'What are some',
-      subheading: `recent events about $DOGE?`,
-      message: `What are some recent events about $DOGE?`
+      heading: 'Hotel Point Deals',
+      subheading: 'Earn bonus Avios on stays',
+      message: `Show me partner hotel deals in Cape Town or New York that award bonus Avios toward my flights.`
     }
   ]
 

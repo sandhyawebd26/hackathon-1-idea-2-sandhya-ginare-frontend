@@ -1,4 +1,5 @@
 import type { Provenance, SavingsResult } from "@/lib/domain/types"
+import { lookupAwardTaxesEur } from "@/lib/domain/award-taxes"
 import { percentSaving } from "@/lib/domain/money"
 import chart from "@/data/avios-chart.json"
 
@@ -40,7 +41,10 @@ export function computeSavings(input: {
   const cashMinor = Math.round(input.cashEur * 100)
   const row = lookupAviosChart(input.origin, input.destination, input.cabin)
 
-  const taxesMinor = row ? Math.round(row.taxesEur * 100) : cashMinor
+  const taxesEur = row
+    ? lookupAwardTaxesEur(input.origin, input.destination, input.cabin)
+    : input.cashEur
+  const taxesMinor = row ? Math.round(taxesEur * 100) : cashMinor
   const milesRequired = row?.milesRequired ?? 0
   const program = row?.program ?? "Iberia Avios"
   const hackedMinor = input.forcePayCash || !row ? cashMinor : taxesMinor

@@ -7,15 +7,24 @@ function read(name: string): string {
 
 export function serverEnv() {
   const supabaseUrl =
-    read("NEXT_PUBLIC_SUPABASE_URL") || read("NEXT_PUBLIC_SUPABASE_PROJECT_URL")
+    read("NEXT_PUBLIC_SUPABASE_URL") ||
+    read("NEXT_PUBLIC_SUPABASE_PROJECT_URL") ||
+    read("NEXT_SUPABASE_URL") ||
+    read("SUPABASE_URL")
   const supabaseAnon =
-    read("NEXT_PUBLIC_SUPABASE_ANON_KEY") || read("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")
+    read("NEXT_PUBLIC_SUPABASE_ANON_KEY") ||
+    read("NEXT_SUPABASE_ANON_KEY") ||
+    read("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY") ||
+    read("SUPABASE_ANON_KEY") ||
+    read("SUPABASE_PUBLISHABLE_KEY")
 
   const duffel =
     read("DUFFEL_ACCESS_TOKEN") || read("DUFFEL_API_KEY") || read("NEXT_PUBLIC_DUFFEL_API_KEY")
 
   const supabaseSecret =
-    read("SUPABASE_SECRET_KEY") || read("NEXT_PUBLIC_SUPABASE_SECRET_KEY")
+    read("SUPABASE_SECRET_KEY") ||
+    read("SUPABASE_SERVICE_ROLE_KEY") ||
+    read("NEXT_PUBLIC_SUPABASE_SECRET_KEY")
 
   const providerModeRaw = read("PROVIDER_MODE")
   let providerMode = (providerModeRaw || "fixture") as ProviderMode

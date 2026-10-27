@@ -1,31 +1,18 @@
 import 'server-only'
 
 import type React from 'react'
-import {
-  createAI,
-  createStreamableUI,
-  getMutableAIState,
-  getAIState,
-  render,
-  createStreamableValue
-} from 'ai/rsc'
-import OpenAI from 'openai'
+import { createAI, getMutableAIState, getAIState } from 'ai/rsc'
 
 import {
   spinner,
   BotCard,
   BotMessage,
-  SystemMessage,
-  Stock,
-  Purchase
+  SystemMessage
 } from '@/components/stocks'
-
-import { z } from 'zod'
-import { EventsSkeleton } from '@/components/stocks/events-skeleton'
-import { Events } from '@/components/stocks/events'
-import { StocksSkeleton } from '@/components/stocks/stocks-skeleton'
-import { Stocks } from '@/components/stocks/stocks'
-import { StockSkeleton } from '@/components/stocks/stock-skeleton'
+import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
+import { FlightOptionCard } from '@/components/flight-generative-ui/FlightOptionCard'
+import { EarnStrategyCard } from '@/components/flight-generative-ui/EarnStrategyCard'
+import { HotelDealsCard } from '@/components/flight-generative-ui/HotelDealsCard'
 import {
   formatNumber,
   runAsyncFnWithoutBlocking,
@@ -33,13 +20,10 @@ import {
   nanoid
 } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
-import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
+import { isFlightSearchIntent } from '@/lib/chat/parse-route-intent'
+import { searchTripForChat } from '@/lib/chat/search-trip-tool'
 import { Chat } from '@/lib/types'
 import { getServerUser } from '@/lib/supabase/server'
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || ''
-})
 
 export type Message = {
   role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool'
@@ -63,87 +47,6 @@ export type UserMessageResponse = {
   display: React.ReactNode
 }
 
-async function confirmPurchase(symbol: string, price: number, amount: number) {
-  'use server'
-
-  const aiState = getMutableAIState<typeof AI>()
-
-  const purchasing = createStreamableUI(
-    <div className="inline-flex items-start gap-1 md:items-center">
-      {spinner}
-      <p className="mb-2">
-        Purchasing {amount} ${symbol}...
-      </p>
-    </div>
-  )
-
-  const systemMessage = createStreamableUI(null)
-
-  runAsyncFnWithoutBlocking(async () => {
-    await sleep(1000)
-
-    purchasing.update(
-      <div className="inline-flex items-start gap-1 md:items-center">
-        {spinner}
-        <p className="mb-2">
-          Purchasing {amount} ${symbol}... working on it...
-        </p>
-      </div>
-    )
-
-    await sleep(1000)
-
-    purchasing.done(
-      <div>
-        <p className="mb-2">
-          You have successfully purchased {amount} ${symbol}. Total cost:{' '}
-          {formatNumber(amount * price)}
-        </p>
-      </div>
-    )
-
-    systemMessage.done(
-      <SystemMessage>
-        You have purchased {amount} shares of {symbol} at ${price}. Total cost ={' '}
-        {formatNumber(amount * price)}.
-      </SystemMessage>
-    )
-
-    aiState.done({
-      ...aiState.get(),
-      messages: [
-        ...aiState.get().messages.slice(0, -1),
-        {
-          id: nanoid(),
-          role: 'function',
-          name: 'showStockPurchase',
-          content: JSON.stringify({
-            symbol,
-            price,
-            defaultAmount: amount,
-            status: 'completed'
-          })
-        },
-        {
-          id: nanoid(),
-          role: 'system',
-          content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${
-            amount * price
-          }]`
-        }
-      ]
-    })
-  })
-
-  return {
-    purchasingUI: purchasing.value,
-    newMessage: {
-      id: nanoid(),
-      display: systemMessage.value
-    }
-  }
-}
-
 async function submitUserMessage(content: string): Promise<UserMessageResponse> {
   'use server'
 
@@ -161,265 +64,182 @@ async function submitUserMessage(content: string): Promise<UserMessageResponse> 
     ]
   })
 
-  let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
-  let textNode: undefined | React.ReactNode
+  const textLower = content.toLowerCase()
 
-  const ui = render({
-    model: 'gpt-3.5-turbo',
-    provider: openai,
-    initial: <SpinnerMessage />,
-    messages: [
-      {
-        role: 'system',
-        content: `\
-You are a stock trading conversation bot and you can help users buy stocks, step by step.
-You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
+  if (isFlightSearchIntent(content) && !textLower.includes('hotel')) {
+    const { flight, summary } = await searchTripForChat(content)
 
-Messages inside [] means that it's a UI element or a user event. For example:
-- "[Price of AAPL = 100]" means that an interface of the stock price of AAPL is shown to the user.
-- "[User has changed the amount of AAPL to 10]" means that the user has changed the amount of AAPL to 10 in the UI.
-
-If the user requests purchasing a stock, call \`show_stock_purchase_ui\` to show the purchase UI.
-If the user just wants the price, call \`show_stock_price\` to show the price.
-If you want to show trending stocks, call \`list_stocks\`.
-If you want to show events, call \`get_events\`.
-If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
-
-Besides that, you can also chat with users and do some calculations if needed.`
-      },
-      ...aiState.get().messages.map((message: any) => ({
-        role: message.role,
-        content: message.content,
-        name: message.name
-      }))
-    ],
-    text: ({ content, done, delta }) => {
-      if (!textStream) {
-        textStream = createStreamableValue('')
-        textNode = <BotMessage content={textStream.value} />
-      }
-
-      if (done) {
-        textStream.done()
-        aiState.done({
-          ...aiState.get(),
-          messages: [
-            ...aiState.get().messages,
-            {
-              id: nanoid(),
-              role: 'assistant',
-              content
-            }
-          ]
-        })
-      } else {
-        textStream.update(delta)
-      }
-
-      return textNode
-    },
-    functions: {
-      listStocks: {
-        description: 'List three imaginary stocks that are trending.',
-        parameters: z.object({
-          stocks: z.array(
-            z.object({
-              symbol: z.string().describe('The symbol of the stock'),
-              price: z.number().describe('The price of the stock'),
-              delta: z.number().describe('The change in price of the stock')
-            })
-          )
-        }),
-        render: async function* ({ stocks }) {
-          yield (
-            <BotCard>
-              <StocksSkeleton />
-            </BotCard>
-          )
-
-          await sleep(1000)
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'function',
-                name: 'listStocks',
-                content: JSON.stringify(stocks)
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Stocks props={stocks} />
-            </BotCard>
-          )
+    aiState.done({
+      ...aiState.get(),
+      messages: [
+        ...aiState.get().messages,
+        {
+          id: nanoid(),
+          role: 'assistant',
+          content: summary
+        },
+        {
+          id: nanoid(),
+          role: 'function',
+          name: 'showFlightOption',
+          content: JSON.stringify(flight)
         }
-      },
-      showStockPrice: {
-        description:
-          'Get the current stock price of a given stock or currency. Use this to show the price to the user.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          delta: z.number().describe('The change in price of the stock')
-        }),
-        render: async function* ({ symbol, price, delta }) {
-          yield (
-            <BotCard>
-              <StockSkeleton />
-            </BotCard>
-          )
+      ]
+    })
 
-          await sleep(1000)
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'function',
-                name: 'showStockPrice',
-                content: JSON.stringify({ symbol, price, delta })
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Stock props={{ symbol, price, delta }} />
-            </BotCard>
-          )
-        }
-      },
-      showStockPurchase: {
-        description:
-          'Show price and the UI to purchase a stock or currency. Use this if the user wants to purchase a stock or currency.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          numberOfShares: z
-            .number()
-            .describe(
-              'The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.'
-            )
-        }),
-        render: async function* ({ symbol, price, numberOfShares = 100 }) {
-          if (numberOfShares <= 0 || numberOfShares > 1000) {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'system',
-                  content: `[User has selected an invalid amount]`
-                }
-              ]
-            })
-
-            return <BotMessage content={'Invalid amount'} />
-          }
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'function',
-                name: 'showStockPurchase',
-                content: JSON.stringify({
-                  symbol,
-                  price,
-                  numberOfShares
-                })
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Purchase
-                props={{
-                  numberOfShares,
-                  symbol,
-                  price: +price,
-                  status: 'requires_action'
-                }}
-              />
-            </BotCard>
-          )
-        }
-      },
-      getEvents: {
-        description:
-          'List funny imaginary events between user highlighted dates that describe stock activity.',
-        parameters: z.object({
-          events: z.array(
-            z.object({
-              date: z
-                .string()
-                .describe('The date of the event, in ISO-8601 format'),
-              headline: z.string().describe('The headline of the event'),
-              description: z.string().describe('The description of the event')
-            })
-          )
-        }),
-        render: async function* ({ events }) {
-          yield (
-            <BotCard>
-              <EventsSkeleton />
-            </BotCard>
-          )
-
-          await sleep(1000)
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'function',
-                name: 'getEvents',
-                content: JSON.stringify(events)
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Events props={events} />
-            </BotCard>
-          )
-        }
-      }
+    return {
+      id: nanoid(),
+      display: (
+        <div className="flex flex-col gap-3">
+          <BotMessage content={summary} />
+          <BotCard>
+            <FlightOptionCard {...flight} />
+          </BotCard>
+        </div>
+      )
     }
+  }
+
+  if (
+    textLower.includes('revolut') ||
+    textLower.includes('earn') ||
+    textLower.includes('strategy') ||
+    textLower.includes('card') ||
+    textLower.includes('points') ||
+    textLower.includes('amex')
+  ) {
+    const earnData = {
+      targetPoints: 85000,
+      targetDestination: 'Johannesburg / New York Business Class',
+      cabin: 'Business Class',
+      currentPoints: 22000,
+      defaultMonthlySpend: 2000
+    }
+
+    aiState.done({
+      ...aiState.get(),
+      messages: [
+        ...aiState.get().messages,
+        {
+          id: nanoid(),
+          role: 'assistant',
+          content: `Here is your customized Spain Points Earning Roadmap. By routing your everyday Spanish card expenses through Revolut Metal/Ultra (RevPoints) and Amex Spain, you earn points on supermarket visits, dining, and utility bills. Transfers to Iberia Plus Avios are 1:1 and instant.`
+        },
+        {
+          id: nanoid(),
+          role: 'function',
+          name: 'showEarnStrategy',
+          content: JSON.stringify(earnData)
+        }
+      ]
+    })
+
+    return {
+      id: nanoid(),
+      display: (
+        <div className="flex flex-col gap-3">
+          <BotMessage content="Here is your customized **Spanish Loyalty Earning Roadmap**. You don't have to fly millions of miles to accumulate Avios — by routing monthly everyday spending through Spanish cards like **Revolut (RevPoints)** or **Amex Spain**, you can accumulate enough for long-haul business class in months. Adjust your monthly spend below to see your exact timeline:" />
+          <BotCard>
+            <EarnStrategyCard {...earnData} />
+          </BotCard>
+        </div>
+      )
+    }
+  }
+
+  if (textLower.includes('hotel') || textLower.includes('stay') || textLower.includes('deal')) {
+    const hotelData = {
+      destinationCity: 'Cape Town / New York',
+      deals: [
+        {
+          id: 'hotel-1',
+          name: 'The Silo Waterfront Hotel',
+          city: 'Cape Town',
+          rating: 4.9,
+          pricePerNightEur: 295,
+          aviosBonus: 12500,
+          partnerProgram: 'Iberia Plus Hotels / Rocketmiles',
+          bookingUrl: 'https://www.iberia.com'
+        },
+        {
+          id: 'hotel-2',
+          name: 'The Standard High Line',
+          city: 'New York',
+          rating: 4.8,
+          pricePerNightEur: 275,
+          aviosBonus: 9500,
+          partnerProgram: 'Booking.com Avios Partner',
+          bookingUrl: 'https://www.iberia.com'
+        }
+      ]
+    }
+
+    aiState.done({
+      ...aiState.get(),
+      messages: [
+        ...aiState.get().messages,
+        {
+          id: nanoid(),
+          role: 'assistant',
+          content: `Here are verified hotel deals that award massive bonus Avios. A 3-night stay can generate up to 12,500 bonus Avios toward your flights!`
+        },
+        {
+          id: nanoid(),
+          role: 'function',
+          name: 'showHotelDeals',
+          content: JSON.stringify(hotelData)
+        }
+      ]
+    })
+
+    return {
+      id: nanoid(),
+      display: (
+        <div className="flex flex-col gap-3">
+          <BotMessage content="Here are verified **partner hotel point accelerators**! Booking through Iberia Plus Hotels or Booking.com Avios partners gives you normal hotel rates plus up to **12,500 bonus Avios**, which can offset 15% to 20% of your next business flight:" />
+          <BotCard>
+            <HotelDealsCard {...hotelData} />
+          </BotCard>
+        </div>
+      )
+    }
+  }
+
+  // Default helpful flight assistant response
+  const defaultText = `I am your **A Una Milla AI Flight Booking Assistant** (OpenClaw-powered agent). 
+
+Here is what I can do for you from 0 to 100%:
+1. **Instant Award Flight Searches**: Scan Iberia Plus, British Airways Club, and Qatar charts up to 355 days in advance. Compare retail cash against required Avios + taxes with exact net euro savings.
+2. **Personalized Earning Strategies**: Calculate months to miles based on your Spanish credit cards (Revolut RevPoints, Amex Spain) and British Airways Avios Boosters.
+3. **Partner Hotel Accelerators**: Find hotel deals in your destination that reward up to 15,000 bonus Avios.
+4. **Save & Book Direct**: Save your custom itineraries and book directly on the official airline portal with zero middleman fees.
+
+Try asking:
+- *"Find business class flights from Madrid to New York"*
+- *"How can I earn 85k Avios using my Revolut card?"*
+- *"Show hotel deals that give bonus Avios"*`
+
+  aiState.done({
+    ...aiState.get(),
+    messages: [
+      ...aiState.get().messages,
+      {
+        id: nanoid(),
+        role: 'assistant',
+        content: defaultText
+      }
+    ]
   })
 
   return {
     id: nanoid(),
-    display: ui
+    display: <BotMessage content={defaultText} />
   }
 }
 
 export const AI = createAI<AIState, UIState>({
   actions: {
-    submitUserMessage,
-    confirmPurchase
+    submitUserMessage
   },
   initialUIState: [],
   initialAIState: { chatId: nanoid(), messages: [] },
@@ -427,71 +247,67 @@ export const AI = createAI<AIState, UIState>({
     'use server'
 
     const user = await getServerUser()
-
     if (user) {
-      const aiState = getAIState()
-
-      if (aiState) {
-        const uiState = getUIStateFromAIState(aiState)
-        return uiState
+      const state = getAIState()
+      if (state) {
+        return getUIStateFromAIState(state)
       }
-    } else {
-      return
     }
+    return []
   },
   onSetAIState: async ({ state, done }) => {
     'use server'
 
-    if (!done) return
+    if (done) {
+      const user = await getServerUser()
+      if (user) {
+        const { chatId, messages } = state
+        const createdAt = new Date()
+        const userId = user.id
+        const path = `/chat/${chatId}`
+        const title = messages[0]?.content?.substring(0, 100) || 'Travel consultation'
 
-    const user = await getServerUser()
+        const chat: Chat = {
+          id: chatId,
+          title,
+          userId,
+          createdAt,
+          messages,
+          path
+        }
 
-    if (user) {
-      const { chatId, messages } = state
-
-      const createdAt = new Date()
-      const userId = user.id
-      const path = `/chat/${chatId}`
-      const title = messages[0].content.substring(0, 100)
-
-      const chat: Chat = {
-        id: chatId,
-        title,
-        userId,
-        createdAt,
-        messages,
-        path
+        await saveChat(chat)
       }
-
-      await saveChat(chat)
-    } else {
-      return
     }
   }
 })
 
-export const getUIStateFromAIState = (aiState: Chat) => {
+function safeJsonParse(val: string) {
+  try {
+    return JSON.parse(val)
+  } catch {
+    return {}
+  }
+}
+
+export const getUIStateFromAIState = (aiState: Chat | AIState) => {
   return aiState.messages
     .filter(message => message.role !== 'system')
     .map((message, index) => ({
       id: `${aiState.chatId}-${index}`,
       display:
         message.role === 'function' ? (
-          message.name === 'listStocks' ? (
+          message.name === 'showFlightOption' ? (
             <BotCard>
-              <Stocks props={JSON.parse(message.content)} />
+              <FlightOptionCard {...safeJsonParse(message.content)} />
             </BotCard>
-          ) : message.name === 'showStockPrice' ? (
+          ) : message.name === 'showEarnStrategy' ? (
             <BotCard>
-              <Stock props={JSON.parse(message.content)} />
+              <EarnStrategyCard {...safeJsonParse(message.content)} />
             </BotCard>
-          ) : message.name === 'showStockPurchase' ? (
+          ) : message.name === 'showHotelDeals' ? (
             <BotCard>
-              <Purchase props={JSON.parse(message.content)} />
-            </BotCard>
-          ) : message.name === 'getEvents' ? (
-            <BotCard>
-              <Events props={JSON.parse(message.content)} />
+              <HotelDealsCard {...safeJsonParse(message.content)} />
             </BotCard>
           ) : null
         ) : message.role === 'user' ? (

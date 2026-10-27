@@ -88,6 +88,44 @@ export async function health(): Promise<{ ok: boolean }> {
   }
 }
 
+export type SpainCardDto = {
+  id: string
+  name: string
+  issuer: string
+  monthlyFeeEur: number
+  annualFeeEur: number
+  earnRateDebit: number
+  earnRateDebitLabel: string
+  transferPartners: string[]
+  transferRatio: string
+  description: string
+}
+
+export async function listCards(): Promise<{
+  cards: SpainCardDto[]
+  illustrative: boolean
+}> {
+  if (useClientFixtures) {
+    const { listSpainCards } = await import("@/lib/catalogue/spain-cards")
+    return { cards: listSpainCards(), illustrative: true }
+  }
+
+  try {
+    const payload = await requestJson<{
+      ok: boolean
+      data: SpainCardDto[]
+      meta?: { illustrative?: boolean }
+    }>("/api/cards")
+    return {
+      cards: payload.data ?? [],
+      illustrative: payload.meta?.illustrative ?? true,
+    }
+  } catch {
+    const { listSpainCards } = await import("@/lib/catalogue/spain-cards")
+    return { cards: listSpainCards(), illustrative: true }
+  }
+}
+
 export function storePendingSearch(request: SearchRequest) {
   if (typeof window === "undefined") return
 

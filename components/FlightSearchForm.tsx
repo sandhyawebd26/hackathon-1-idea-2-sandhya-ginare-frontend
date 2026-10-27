@@ -3,37 +3,29 @@
 import { useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import {
-  ArrowTopRightIcon,
-  Cross2Icon,
-  MinusIcon,
-  PlusIcon,
-} from "@radix-ui/react-icons"
+  ArrowRight,
+  ArrowUpDown,
+  Calendar,
+  Coins,
+  CreditCard,
+  Plus,
+  Sparkles,
+  Trash2,
+  CheckCircle2,
+  HelpCircle,
+} from "lucide-react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-  FieldTitle,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { storePendingSearch } from "@/lib/api"
 import { searchRequestSchema } from "@/lib/search-validation"
 import type { CabinClass, SearchLeg, SearchMode } from "@/lib/search-types"
+import { AirportDropdown } from "@/components/flight-search/AirportDropdown"
+import { CabinDropdown } from "@/components/flight-search/CabinDropdown"
+import { TravellersDropdown } from "@/components/flight-search/TravellersDropdown"
+import { RoutePresets, type RoutePreset } from "@/components/flight-search/RoutePresets"
+import { LiveSavingsPreview } from "@/components/flight-search/LiveSavingsPreview"
 import { cn } from "@/lib/utils"
 
 type FormLeg = SearchLeg & { id: string }
@@ -43,74 +35,27 @@ interface FlightSearchFormProps {
   mode: SearchMode
 }
 
-interface TextFieldProps {
-  id: string
-  label: string
-  value: string
-  error?: string
-  type?: "text" | "date"
-  placeholder?: string
-  onChange: (value: string) => void
-}
-
-function TextField({
-  id,
-  label,
-  value,
-  error,
-  type = "text",
-  placeholder,
-  onChange,
-}: TextFieldProps) {
-  return (
-    <Field data-invalid={Boolean(error)}>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Input
-        id={id}
-        type={type}
-        value={value}
-        placeholder={placeholder}
-        autoComplete="off"
-        autoCapitalize={type === "text" ? "characters" : undefined}
-        maxLength={type === "text" ? 3 : undefined}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? `${id}-error` : undefined}
-        className="h-11 rounded-xl bg-background px-3 text-base"
-        onChange={event => onChange(event.currentTarget.value)}
-      />
-      {error && <FieldError id={`${id}-error`}>{error}</FieldError>}
-    </Field>
-  )
-}
-
 function initialLegs(mode: SearchMode): FormLeg[] {
   if (mode === "trip") {
     return [
-      { id: "leg-1", origin: "MAD", destination: "JNB", departureDate: "2026-11-15" },
-      { id: "leg-2", origin: "JNB", destination: "MAD", departureDate: "2026-11-28" },
+      { id: "leg-1", origin: "MAD", destination: "MIA", departureDate: "2026-11-15" },
+      { id: "leg-2", origin: "MIA", destination: "MAD", departureDate: "2026-11-28" },
     ]
   }
 
   return [{ id: "leg-1", origin: "MAD", destination: "JNB", departureDate: "2026-11-15" }]
 }
 
-const cabinOptions: Array<{ value: CabinClass; label: string }> = [
-  { value: "economy", label: "Economy" },
-  { value: "premium_economy", label: "Premium economy" },
-  { value: "business", label: "Business" },
-  { value: "first", label: "First" },
-]
-
 export function FlightSearchForm({ mode }: FlightSearchFormProps) {
   const router = useRouter()
-  const [legs, setLegs] = useState(() => initialLegs(mode))
+  const [legs, setLegs] = useState<FormLeg[]>(() => initialLegs(mode))
   const [cabin, setCabin] = useState<CabinClass>("business")
   const [adults, setAdults] = useState(1)
   const [flexibleDates, setFlexibleDates] = useState(false)
   const [miles, setMiles] = useState({ iberiaAvios: 85000, baAvios: 0, qatarAvios: 0 })
   const [errors, setErrors] = useState<FormErrors>({})
 
-  const title = mode === "quick" ? "Quick flight" : "Full trip plan"
+  const title = mode === "quick" ? "Quick flight comparison" : "Full multi-stop trip planner"
 
   function updateLeg(index: number, key: keyof SearchLeg, value: string) {
     const normalizedValue = key === "departureDate"
@@ -128,6 +73,17 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
     })
   }
 
+  function swapOriginDestination(index: number) {
+    setLegs(current => current.map((leg, legIndex) => {
+      if (legIndex !== index) return leg
+      return {
+        ...leg,
+        origin: leg.destination || "MAD",
+        destination: leg.origin || "JNB",
+      }
+    }))
+  }
+
   function addLeg() {
     if (legs.length >= 3) return
 
@@ -139,8 +95,8 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
       ...current,
       {
         id: `leg-${Date.now()}`,
-        origin: previousLeg.destination,
-        destination: "",
+        origin: previousLeg.destination || "MIA",
+        destination: "JFK",
         departureDate: nextDate.toISOString().slice(0, 10),
       },
     ])
@@ -151,9 +107,34 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
     setErrors({})
   }
 
+  function handlePresetSelect(preset: RoutePreset) {
+    setLegs(current => [
+      {
+        ...current[0],
+        origin: preset.origin,
+        destination: preset.destination,
+      },
+      ...(mode === "trip"
+        ? [
+            {
+              id: "leg-2",
+              origin: preset.destination,
+              destination: preset.origin,
+              departureDate: "2026-11-28",
+            },
+          ]
+        : []),
+    ])
+    setCabin(preset.cabin)
+  }
+
   function updateMiles(key: keyof typeof miles, rawValue: string) {
     const amount = Number.parseInt(rawValue, 10)
     setMiles(current => ({ ...current, [key]: Number.isFinite(amount) ? Math.max(0, amount) : 0 }))
+  }
+
+  function addQuickAvios(amount: number) {
+    setMiles(current => ({ ...current, iberiaAvios: current.iberiaAvios + amount }))
   }
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
@@ -183,277 +164,334 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
     router.push("/results")
   }
 
-  function loadDemoRoute() {
-    const demo = searchRequestSchema.parse({
-      mode,
-      legs: initialLegs(mode).map(({ origin, destination, departureDate }) => ({
-        origin,
-        destination,
-        departureDate,
-      })),
-      cabin: "business",
-      adults: 1,
-      miles: { iberiaAvios: 85000, baAvios: 0, qatarAvios: 0 },
-      flexibleDates: false,
-    })
-    storePendingSearch(demo)
-    router.push("/results")
-  }
-
   return (
-    <div className="mx-auto w-full max-w-4xl pb-20 pt-10 sm:pb-16 sm:pt-14">
-      <div className="mb-8 max-w-2xl sm:mb-10">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-          A Una Milla · Travel planning
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-[-0.055em] text-espresso sm:text-5xl">
+    <div className="mx-auto w-full max-w-6xl pb-20 pt-8 sm:pb-16 sm:pt-12">
+      {/* Header */}
+      <div className="mb-8 max-w-3xl">
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 text-xs font-semibold text-primary">
+          <Sparkles className="size-3.5" />
+          <span>A Una Milla · Travel Hacking Engine</span>
+        </div>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-espresso sm:text-5xl">
           {title}
         </h1>
-        <p className="mt-3 max-w-xl text-base font-medium leading-7 text-muted-foreground sm:text-lg">
-          {mode === "quick" ? "One route, one answer." : "Complete and detailed."}
-        </p>
-        <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+        <p className="mt-2 text-base text-muted-foreground sm:text-lg">
           {mode === "quick"
-            ? "Start with the flight you already have in mind."
-            : "Add several stops and dates to uncover the biggest savings on complex trips."}
+            ? "Instantly see how much you save on cash fares by unlocking Iberia Plus & British Airways Avios award charts."
+            : "Plan complex multi-city or roundtrip award flights across Spain and international hubs with maximum points efficiency."}
         </p>
       </div>
 
-      <form onSubmit={submitSearch} noValidate className="flex flex-col gap-6">
-        {errors.form && (
-          <Alert variant="destructive">
-            <AlertTitle>Check your trip details</AlertTitle>
-            <AlertDescription>{errors.form}</AlertDescription>
-          </Alert>
-        )}
-        {errors.legs && (
-          <Alert variant="destructive">
-            <AlertTitle>Check your itinerary</AlertTitle>
-            <AlertDescription>{errors.legs}</AlertDescription>
-          </Alert>
-        )}
+      {/* Preset Route Sweet Spots */}
+      <div className="mb-8 rounded-2xl border border-border/80 bg-cream/40 p-4">
+        <RoutePresets
+          onSelect={handlePresetSelect}
+          currentOrigin={legs[0]?.origin}
+          currentDestination={legs[0]?.destination}
+        />
+      </div>
 
-        <FieldSet className="rounded-3xl border border-border bg-background p-5 shadow-sm sm:p-7">
-          <div className="flex items-center justify-between gap-3">
-            <FieldLegend className="mb-0 text-lg font-semibold tracking-tight">
-              {mode === "quick" ? "Your route" : "Your itinerary"}
-            </FieldLegend>
-            {mode === "trip" && (
-              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
-                {legs.length} of 3 legs
-              </span>
+      {/* Main Two-Column Interactive Layout */}
+      <div className="grid gap-8 lg:grid-cols-12 lg:items-start">
+        {/* Left Column: Interactive Form */}
+        <form onSubmit={submitSearch} noValidate className="flex flex-col gap-6 lg:col-span-7">
+          {errors.form && (
+            <Alert variant="destructive">
+              <AlertTitle>Check your trip details</AlertTitle>
+              <AlertDescription>{errors.form}</AlertDescription>
+            </Alert>
+          )}
+          {errors.legs && (
+            <Alert variant="destructive">
+              <AlertTitle>Check your itinerary</AlertTitle>
+              <AlertDescription>{errors.legs}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Legs Section */}
+          <div className="rounded-3xl border border-border bg-background p-5 shadow-sm sm:p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold tracking-tight text-espresso">
+                {mode === "quick" ? "Route & Schedule" : "Multi-Leg Itinerary"}
+              </h2>
+              {mode === "trip" && (
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                  {legs.length} of 3 legs
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              {legs.map((leg, index) => (
+                <div
+                  key={leg.id}
+                  className="rounded-2xl border border-border/80 bg-cream/50 p-4 sm:p-5 relative transition-all hover:border-primary/40"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                      {mode === "quick" ? "Direct Flight Route" : `Stopover Leg ${index + 1}`}
+                    </span>
+                    {mode === "trip" && legs.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => removeLeg(leg.id)}
+                        className="text-muted-foreground hover:text-destructive text-xs flex items-center gap-1 transition-colors"
+                      >
+                        <Trash2 className="size-3.5" />
+                        Remove leg
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-12 sm:items-center">
+                    {/* Origin Airport Dropdown */}
+                    <div className="sm:col-span-5">
+                      <AirportDropdown
+                        id={`leg-${index}-origin`}
+                        label="From (Origin)"
+                        value={leg.origin}
+                        type="origin"
+                        error={errors[`legs.${index}.origin`]}
+                        onChange={(code) => updateLeg(index, "origin", code)}
+                      />
+                    </div>
+
+                    {/* Quick Swap Button */}
+                    <div className="sm:col-span-2 flex justify-center py-1 sm:py-0 sm:pt-5">
+                      <button
+                        type="button"
+                        onClick={() => swapOriginDestination(index)}
+                        title="Swap Origin and Destination"
+                        aria-label="Swap Origin and Destination"
+                        className="flex size-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground hover:bg-cream hover:text-primary transition-all hover:rotate-180"
+                      >
+                        <ArrowUpDown className="size-4" />
+                      </button>
+                    </div>
+
+                    {/* Destination Airport Dropdown */}
+                    <div className="sm:col-span-5">
+                      <AirportDropdown
+                        id={`leg-${index}-destination`}
+                        label="To (Destination)"
+                        value={leg.destination}
+                        type="destination"
+                        error={errors[`legs.${index}.destination`]}
+                        onChange={(code) => updateLeg(index, "destination", code)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Travel Date */}
+                  <div className="mt-4 pt-3 border-t border-border/50 grid gap-3 sm:grid-cols-2 sm:items-center">
+                    <div>
+                      <label
+                        htmlFor={`leg-${index}-date`}
+                        className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-1.5"
+                      >
+                        <Calendar className="size-3.5 text-primary" />
+                        Travel Date
+                      </label>
+                      <input
+                        id={`leg-${index}-date`}
+                        type="date"
+                        value={leg.departureDate}
+                        onChange={(e) => updateLeg(index, "departureDate", e.target.value)}
+                        className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                      {errors[`legs.${index}.departureDate`] && (
+                        <p className="text-xs text-destructive mt-1">
+                          {errors[`legs.${index}.departureDate`]}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Quick Date Presets */}
+                    <div className="flex flex-col justify-end">
+                      <span className="text-[11px] text-muted-foreground mb-1.5 font-medium">
+                        Quick Departure Horizon:
+                      </span>
+                      <div className="flex gap-1.5 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => updateLeg(index, "departureDate", "2026-11-15")}
+                          className="rounded-lg bg-secondary px-2 py-1 text-[11px] font-medium text-foreground hover:bg-secondary/80"
+                        >
+                          Nov 2026
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateLeg(index, "departureDate", "2026-12-20")}
+                          className="rounded-lg bg-secondary px-2 py-1 text-[11px] font-medium text-foreground hover:bg-secondary/80"
+                        >
+                          Holidays
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateLeg(index, "departureDate", "2027-06-15")}
+                          className="rounded-lg bg-secondary px-2 py-1 text-[11px] font-medium text-foreground hover:bg-secondary/80"
+                        >
+                          Summer &apos;27
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {mode === "trip" && legs.length < 3 && (
+              <div className="pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addLeg}
+                  className="rounded-full gap-1.5 border-dashed border-primary/50 text-primary hover:bg-primary/10"
+                >
+                  <Plus className="size-4" />
+                  Add next stopover leg
+                </Button>
+              </div>
             )}
           </div>
 
-          <FieldGroup className="gap-4">
-            {legs.map((leg, index) => (
-              <FieldSet
-                key={leg.id}
-                className="rounded-2xl border border-border bg-cream/65 p-4 sm:p-5"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <FieldLegend variant="label" className="mb-0 font-semibold">
-                    {mode === "quick" ? "Flight details" : `Leg ${index + 1}`}
-                  </FieldLegend>
-                  {mode === "trip" && legs.length > 2 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-11"
-                      aria-label={`Remove leg ${index + 1}`}
-                      onClick={() => removeLeg(leg.id)}
-                    >
-                      <Cross2Icon data-icon="inline-start" aria-hidden="true" />
-                    </Button>
-                  )}
-                </div>
-                <FieldGroup className="grid gap-4 sm:grid-cols-3">
-                  <TextField
-                    id={`leg-${index}-origin`}
-                    label="From · airport code"
-                    value={leg.origin}
-                    placeholder="MAD"
-                    error={errors[`legs.${index}.origin`]}
-                    onChange={value => updateLeg(index, "origin", value)}
-                  />
-                  <TextField
-                    id={`leg-${index}-destination`}
-                    label="To · airport code"
-                    value={leg.destination}
-                    placeholder="JNB"
-                    error={errors[`legs.${index}.destination`]}
-                    onChange={value => updateLeg(index, "destination", value)}
-                  />
-                  <TextField
-                    id={`leg-${index}-date`}
-                    label="Departure date"
-                    type="date"
-                    value={leg.departureDate}
-                    error={errors[`legs.${index}.departureDate`]}
-                    onChange={value => updateLeg(index, "departureDate", value)}
-                  />
-                </FieldGroup>
-              </FieldSet>
-            ))}
-          </FieldGroup>
+          {/* Cabin & Travellers Section with Dropdowns */}
+          <div className="rounded-3xl border border-border bg-background p-5 shadow-sm sm:p-6 space-y-4">
+            <h2 className="text-lg font-semibold tracking-tight text-espresso">
+              Cabin & Travellers
+            </h2>
 
-          {mode === "trip" && (
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                disabled={legs.length >= 3}
-                onClick={addLeg}
-              >
-                <PlusIcon data-icon="inline-start" aria-hidden="true" />
-                Add a stop
-              </Button>
-              <p className="text-xs text-muted-foreground">Up to 3 legs per plan</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <CabinDropdown value={cabin} onChange={setCabin} />
+              <TravellersDropdown adults={adults} onChange={setAdults} />
             </div>
-          )}
-        </FieldSet>
 
-        <FieldSet className="rounded-3xl border border-border bg-background p-5 shadow-sm sm:p-7">
-          <FieldLegend className="text-lg font-semibold tracking-tight">
-            Travellers & cabin
-          </FieldLegend>
-          <FieldGroup className="grid gap-5 sm:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor="cabin-class">Cabin class</FieldLabel>
-              <Select value={cabin} onValueChange={value => setCabin(value as CabinClass)}>
-                <SelectTrigger id="cabin-class" className="h-11 rounded-xl bg-background text-base">
-                  <SelectValue placeholder="Choose a cabin" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {cabinOptions.map(option => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <Field>
-              <FieldTitle>Adults</FieldTitle>
-              <div role="group" aria-label="Number of adults" className="flex h-11 items-center gap-3">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="icon"
-                  className="size-11"
-                  aria-label="Remove one adult"
-                  disabled={adults <= 1}
-                  onClick={() => setAdults(count => Math.max(1, count - 1))}
-                >
-                  <MinusIcon data-icon="inline-start" aria-hidden="true" />
-                </Button>
-                <output aria-live="polite" className="min-w-8 text-center font-semibold tabular-nums">
-                  {adults}
-                </output>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="icon"
-                  className="size-11"
-                  aria-label="Add one adult"
-                  disabled={adults >= 4}
-                  onClick={() => setAdults(count => Math.min(4, count + 1))}
-                >
-                  <PlusIcon data-icon="inline-start" aria-hidden="true" />
-                </Button>
-                <span className="text-sm text-muted-foreground">1–4 travellers</span>
+            {/* Flexible Dates Toggle */}
+            <div className="flex items-center justify-between rounded-2xl border border-border/80 bg-cream/40 p-3.5 mt-2">
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-espresso">
+                  Flexible Dates (±3 Days)
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  Scans adjacent days for off-peak Avios redemption discounts
+                </span>
               </div>
-            </Field>
-          </FieldGroup>
+              <Switch
+                checked={flexibleDates}
+                onCheckedChange={setFlexibleDates}
+                aria-label="Flexible dates toggle"
+              />
+            </div>
+          </div>
 
-          <Field orientation="horizontal" className="mt-5 items-center justify-between rounded-2xl border border-border bg-cream/65 p-4">
-            <FieldGroup className="gap-1">
-              <FieldLabel htmlFor="flexible-dates">Flexible dates (±3 days)</FieldLabel>
-              <FieldDescription>This is a UI preference; the sample uses the selected date.</FieldDescription>
-            </FieldGroup>
-            <Switch
-              id="flexible-dates"
-              checked={flexibleDates}
-              onCheckedChange={setFlexibleDates}
-              aria-label="Flexible dates"
-            />
-          </Field>
-        </FieldSet>
+          {/* Existing Avios Balance Section */}
+          <details className="rounded-3xl border border-border bg-background p-5 shadow-sm group">
+            <summary className="flex cursor-pointer items-center justify-between font-semibold text-espresso [&::-webkit-details-marker]:hidden">
+              <div className="flex items-center gap-2">
+                <Coins className="size-4 text-primary" />
+                <span>Loyalty Points You Already Have</span>
+              </div>
+              <span className="text-xs font-medium text-primary">
+                Customise balance +
+              </span>
+            </summary>
 
-        <details className="rounded-3xl border border-border bg-background px-5 py-4 shadow-sm sm:px-7">
-          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-semibold [&::-webkit-details-marker]:hidden">
-            Miles you already have
-            <span className="text-xs font-medium text-muted-foreground">Optional</span>
-          </summary>
-          <FieldGroup className="mt-4 grid gap-4 sm:grid-cols-3">
-            <MilesField
-              id="iberia-avios"
-              label="Iberia Avios"
-              value={miles.iberiaAvios}
-              onChange={value => updateMiles("iberiaAvios", value)}
-            />
-            <MilesField
-              id="ba-avios"
-              label="British Airways Avios"
-              value={miles.baAvios}
-              onChange={value => updateMiles("baAvios", value)}
-            />
-            <MilesField
-              id="qatar-avios"
-              label="Qatar Avios"
-              value={miles.qatarAvios}
-              onChange={value => updateMiles("qatarAvios", value)}
-            />
-          </FieldGroup>
-        </details>
+            <div className="mt-4 pt-4 border-t border-border/60 space-y-4">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div>
+                  <label htmlFor="iberia-avios" className="text-xs font-semibold text-muted-foreground block mb-1">
+                    🇪🇸 Iberia Avios
+                  </label>
+                  <input
+                    id="iberia-avios"
+                    type="number"
+                    step={1000}
+                    value={miles.iberiaAvios}
+                    onChange={(e) => updateMiles("iberiaAvios", e.target.value)}
+                    className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="ba-avios" className="text-xs font-semibold text-muted-foreground block mb-1">
+                    🇬🇧 BA Avios (1:1 Free Transfer)
+                  </label>
+                  <input
+                    id="ba-avios"
+                    type="number"
+                    step={1000}
+                    value={miles.baAvios}
+                    onChange={(e) => updateMiles("baAvios", e.target.value)}
+                    className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="qatar-avios" className="text-xs font-semibold text-muted-foreground block mb-1">
+                    🇶🇦 Qatar Avios (1:1 Link)
+                  </label>
+                  <input
+                    id="qatar-avios"
+                    type="number"
+                    step={1000}
+                    value={miles.qatarAvios}
+                    onChange={(e) => updateMiles("qatarAvios", e.target.value)}
+                    className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
 
-        <Field orientation="horizontal" className="items-center justify-between gap-4">
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            className="min-h-11"
-            onClick={loadDemoRoute}
-          >
-            Try demo route
-          </Button>
-          <Button type="submit" variant="primary" size="lg" className="min-h-11">
-            {mode === "quick" ? "See my savings" : "See trip savings"}
-            <ArrowTopRightIcon data-icon="inline-end" aria-hidden="true" />
-          </Button>
-        </Field>
-      </form>
+              {/* Quick balance booster buttons */}
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
+                <span className="text-xs text-muted-foreground font-medium">Quick Boost:</span>
+                <button
+                  type="button"
+                  onClick={() => addQuickAvios(10000)}
+                  className="rounded-lg bg-secondary px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-secondary/80"
+                >
+                  +10,000 Avios
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addQuickAvios(25000)}
+                  className="rounded-lg bg-secondary px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-secondary/80"
+                >
+                  +25,000 Avios
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addQuickAvios(50000)}
+                  className="rounded-lg bg-secondary px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-secondary/80"
+                >
+                  +50,000 Avios
+                </button>
+              </div>
+            </div>
+          </details>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full sm:flex-1 h-12 rounded-2xl text-base font-semibold shadow-md gap-2"
+            >
+              <span>{mode === "quick" ? "Compare Flights & Calculate Savings" : "Calculate Full Trip Savings"}</span>
+              <ArrowRight className="size-4" />
+            </Button>
+          </div>
+        </form>
+
+        {/* Right Column: Dynamic Live Savings Preview */}
+        <div className="lg:col-span-5 lg:sticky lg:top-24">
+          <LiveSavingsPreview
+            legs={legs}
+            cabin={cabin}
+            adults={adults}
+            mode={mode}
+          />
+        </div>
+      </div>
     </div>
-  )
-}
-
-interface MilesFieldProps {
-  id: string
-  label: string
-  value: number
-  onChange: (value: string) => void
-}
-
-function MilesField({ id, label, value, onChange }: MilesFieldProps) {
-  return (
-    <Field>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Input
-        id={id}
-        type="number"
-        min={0}
-        max={1000000}
-        step={1000}
-        inputMode="numeric"
-        value={value}
-        className={cn("h-11 rounded-xl bg-background px-3 text-base")}
-        onChange={event => onChange(event.currentTarget.value)}
-      />
-    </Field>
   )
 }
