@@ -5,7 +5,6 @@ import type { ReactNode } from 'react'
 
 import '@/app/globals.css'
 import { SiteHeader } from '@/components/SiteHeader'
-import { SiteFooter } from '@/components/SiteFooter'
 import { Providers } from '@/components/providers'
 import { Toaster } from '@/components/ui/sonner'
 import { cn } from '@/lib/utils'
@@ -27,7 +26,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0E1220'
+  themeColor: '#F9F6F1'
 }
 
 interface RootLayoutProps {
@@ -40,8 +39,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body className={cn('font-sans antialiased', GeistSans.variable, GeistMono.variable)}>
         <Providers
           attribute="class"
-          defaultTheme="dark"
-          forcedTheme="dark"
+          defaultTheme="light"
+          forcedTheme="light"
           enableSystem={false}
           disableTransitionOnChange
         >
@@ -49,7 +48,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
             <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 sm:px-6">
               <SiteHeader />
               <main className="flex flex-1 flex-col">{children}</main>
-              <SiteFooter />
             </div>
           </div>
           <Toaster position="top-center" />

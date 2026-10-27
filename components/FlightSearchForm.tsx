@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import {
   ArrowTopRightIcon,
@@ -12,7 +11,6 @@ import {
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Field,
   FieldDescription,
@@ -77,7 +75,7 @@ function TextField({
         maxLength={type === "text" ? 3 : undefined}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${id}-error` : undefined}
-        className="h-12 rounded-xl border-white/10 bg-brand-ink/55 px-4 text-base placeholder:text-muted-foreground/70"
+        className="h-11 rounded-xl bg-background px-3 text-base"
         onChange={event => onChange(event.currentTarget.value)}
       />
       {error && <FieldError id={`${id}-error`}>{error}</FieldError>}
@@ -111,12 +109,8 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
   const [flexibleDates, setFlexibleDates] = useState(false)
   const [miles, setMiles] = useState({ iberiaAvios: 85000, baAvios: 0, qatarAvios: 0 })
   const [errors, setErrors] = useState<FormErrors>({})
-  const shouldReduceMotion = Boolean(useReducedMotion())
 
   const title = mode === "quick" ? "Quick flight" : "Full trip plan"
-  const firstLeg = legs[0]
-  const lastLeg = legs[legs.length - 1]
-  const totalMiles = Object.values(miles).reduce((total, amount) => total + amount, 0)
 
   function updateLeg(index: number, key: keyof SearchLeg, value: string) {
     const normalizedValue = key === "departureDate"
@@ -207,12 +201,12 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl pb-16 pt-10 sm:pb-20 sm:pt-14">
+    <div className="mx-auto w-full max-w-4xl pb-20 pt-10 sm:pb-16 sm:pt-14">
       <div className="mb-8 max-w-2xl sm:mb-10">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold">
-          {mode === "quick" ? "One route · one clear answer" : "Every stop · one considered plan"}
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+          A Una Milla · Travel planning
         </p>
-        <h1 className="mt-3 font-display text-4xl tracking-[-0.045em] text-brand-paper sm:text-5xl">
+        <h1 className="mt-3 text-4xl font-semibold tracking-[-0.055em] text-espresso sm:text-5xl">
           {title}
         </h1>
         <p className="mt-3 max-w-xl text-base font-medium leading-7 text-muted-foreground sm:text-lg">
@@ -225,8 +219,7 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
         </p>
       </div>
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
-      <form onSubmit={submitSearch} noValidate className="flex flex-col gap-5">
+      <form onSubmit={submitSearch} noValidate className="flex flex-col gap-6">
         {errors.form && (
           <Alert variant="destructive">
             <AlertTitle>Check your trip details</AlertTitle>
@@ -240,7 +233,7 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
           </Alert>
         )}
 
-        <FieldSet className="rounded-3xl border border-white/10 bg-card/85 p-5 shadow-lg shadow-brand-ink/15 sm:p-7">
+        <FieldSet className="rounded-3xl border border-border bg-background p-5 shadow-sm sm:p-7">
           <div className="flex items-center justify-between gap-3">
             <FieldLegend className="mb-0 text-lg font-semibold tracking-tight">
               {mode === "quick" ? "Your route" : "Your itinerary"}
@@ -253,17 +246,11 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
           </div>
 
           <FieldGroup className="gap-4">
-            <AnimatePresence initial={false}>
-              {legs.map((leg, index) => (
-                <motion.div
-                  key={leg.id}
-                  layout
-                  initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: shouldReduceMotion ? 0 : 0.22 }}
-                >
-                  <FieldSet className="rounded-2xl border border-white/10 bg-brand-ink/45 p-4 sm:p-5">
+            {legs.map((leg, index) => (
+              <FieldSet
+                key={leg.id}
+                className="rounded-2xl border border-border bg-cream/65 p-4 sm:p-5"
+              >
                 <div className="flex items-center justify-between gap-3">
                   <FieldLegend variant="label" className="mb-0 font-semibold">
                     {mode === "quick" ? "Flight details" : `Leg ${index + 1}`}
@@ -307,10 +294,8 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
                     onChange={value => updateLeg(index, "departureDate", value)}
                   />
                 </FieldGroup>
-                  </FieldSet>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+              </FieldSet>
+            ))}
           </FieldGroup>
 
           {mode === "trip" && (
@@ -330,7 +315,7 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
           )}
         </FieldSet>
 
-        <FieldSet className="rounded-3xl border border-white/10 bg-card/85 p-5 shadow-lg shadow-brand-ink/15 sm:p-7">
+        <FieldSet className="rounded-3xl border border-border bg-background p-5 shadow-sm sm:p-7">
           <FieldLegend className="text-lg font-semibold tracking-tight">
             Travellers & cabin
           </FieldLegend>
@@ -338,7 +323,7 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
             <Field>
               <FieldLabel htmlFor="cabin-class">Cabin class</FieldLabel>
               <Select value={cabin} onValueChange={value => setCabin(value as CabinClass)}>
-                <SelectTrigger id="cabin-class" className="h-12 rounded-xl border-white/10 bg-brand-ink/55 text-base">
+                <SelectTrigger id="cabin-class" className="h-11 rounded-xl bg-background text-base">
                   <SelectValue placeholder="Choose a cabin" />
                 </SelectTrigger>
                 <SelectContent>
@@ -386,7 +371,7 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
             </Field>
           </FieldGroup>
 
-          <Field orientation="horizontal" className="mt-5 items-center justify-between rounded-2xl border border-white/10 bg-brand-ink/45 p-4">
+          <Field orientation="horizontal" className="mt-5 items-center justify-between rounded-2xl border border-border bg-cream/65 p-4">
             <FieldGroup className="gap-1">
               <FieldLabel htmlFor="flexible-dates">Flexible dates (±3 days)</FieldLabel>
               <FieldDescription>This is a UI preference; the sample uses the selected date.</FieldDescription>
@@ -400,7 +385,7 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
           </Field>
         </FieldSet>
 
-        <details className="rounded-3xl border border-white/10 bg-card/85 px-5 py-4 shadow-lg shadow-brand-ink/10 sm:px-7">
+        <details className="rounded-3xl border border-border bg-background px-5 py-4 shadow-sm sm:px-7">
           <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-semibold [&::-webkit-details-marker]:hidden">
             Miles you already have
             <span className="text-xs font-medium text-muted-foreground">Optional</span>
@@ -437,52 +422,12 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
           >
             Try demo route
           </Button>
-          <Button type="submit" variant="primary" size="lg" className="min-h-12 rounded-full px-6">
+          <Button type="submit" variant="primary" size="lg" className="min-h-11">
             {mode === "quick" ? "See my savings" : "See trip savings"}
             <ArrowTopRightIcon data-icon="inline-end" aria-hidden="true" />
           </Button>
         </Field>
       </form>
-
-      <aside aria-label="Live trip summary" className="flex flex-col gap-4 lg:sticky lg:top-24">
-        <Card variant="dark" className="gap-0 overflow-hidden rounded-3xl">
-          <CardHeader className="p-5 pb-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-gold">Your details</p>
-            <CardTitle className="mt-2 text-xl text-brand-paper">Trip snapshot</CardTitle>
-            <CardDescription className="text-white/65">A live preview of the information you entered.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-5 p-5 pt-5">
-            <div className="rounded-2xl border border-white/10 bg-brand-ink/25 p-4" aria-live="polite">
-              <p className="text-xs font-medium text-white/60">Route</p>
-              <p className="mt-2 text-xl font-semibold tracking-tight text-brand-paper">
-                {firstLeg?.origin || "Origin"} <span className="text-brand-gold">→</span> {lastLeg?.destination || "Destination"}
-              </p>
-              <p className="mt-2 text-xs text-white/60">
-                {legs.length === 1 ? "One flight" : `${legs.length} flight legs`} · {adults} {adults === 1 ? "traveller" : "travellers"}
-              </p>
-            </div>
-            <dl className="flex flex-col gap-3 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <dt className="text-white/60">Cabin</dt>
-                <dd className="font-medium capitalize text-brand-paper">{cabinOptions.find(option => option.value === cabin)?.label}</dd>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <dt className="text-white/60">Miles on hand</dt>
-                <dd className="font-medium tabular-nums text-brand-paper">{totalMiles.toLocaleString("en-GB")}</dd>
-              </div>
-            </dl>
-            <p className="border-t border-white/10 pt-4 text-xs leading-5 text-white/60">
-              Availability and prices are illustrative. Confirm the final award and fees with the airline before booking.
-            </p>
-          </CardContent>
-        </Card>
-
-        <div className="rounded-3xl border border-brand-gold/15 bg-card/75 p-5">
-          <p className="text-sm font-semibold text-brand-paper">No account needed to compare</p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">Sign in only if you want to keep a comparison in your travel notebook.</p>
-        </div>
-      </aside>
-      </div>
     </div>
   )
 }
@@ -506,7 +451,7 @@ function MilesField({ id, label, value, onChange }: MilesFieldProps) {
         step={1000}
         inputMode="numeric"
         value={value}
-        className={cn("h-12 rounded-xl border-white/10 bg-brand-ink/55 px-4 text-base")}
+        className={cn("h-11 rounded-xl bg-background px-3 text-base")}
         onChange={event => onChange(event.currentTarget.value)}
       />
     </Field>

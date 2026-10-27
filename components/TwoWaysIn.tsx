@@ -5,13 +5,17 @@ import { motion, useReducedMotion } from "framer-motion"
 import {
   ArrowRight,
   ArrowUpRight,
-  Check,
+  CalendarDays,
+  CheckCircle2,
   Compass,
+  MapPin,
   Plane,
   Route,
-  ShieldCheck,
+  Search,
+  type LucideIcon,
 } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -20,252 +24,168 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
 
-const paths = [
+type CardVariant = "cream" | "dark"
+
+type PathOption = {
+  href: string
+  title: string
+  description: string
+  footer: string
+  icon: LucideIcon
+  variant: CardVariant
+}
+
+type InfoItem = {
+  title: string
+  description: string
+  icon: LucideIcon
+}
+
+const paths: PathOption[] = [
   {
     href: "/quick",
     title: "Quick flight",
-    description: "One route, one clear comparison. Start with the flight you already have in mind.",
-    footer: "A few details, then your answer",
+    description: "One route, one answer. For when you know where you’re going.",
+    footer: "Fast and simple",
     icon: Plane,
-    variant: "cream" as const,
+    variant: "cream",
   },
   {
     href: "/trip",
     title: "Full trip plan",
-    description: "Map several stops, dates, and travellers to see how the whole journey fits together.",
-    footer: "Build the complete itinerary",
+    description: "Several stops, dates and travellers. Where the biggest savings usually are.",
+    footer: "Complete and detailed",
     icon: Route,
-    variant: "dark" as const,
+    variant: "dark",
   },
 ]
 
-const benefits = [
+const steps: InfoItem[] = [
   {
-    number: "01",
-    title: "Know what your miles are worth",
-    description: "See the cash fare, award cost, taxes, and estimated difference side by side.",
+    title: "Start with your destination",
+    description: "Add a route, dates, and travellers—or begin with just the flight you have in mind.",
+    icon: MapPin,
   },
   {
-    number: "02",
-    title: "Make the trade-offs visible",
-    description: "Compare a miles booking with paying cash before you commit to either one.",
+    title: "Explore your options",
+    description: "Compare routes and connections, then look at the details that matter to your trip.",
+    icon: Search,
   },
   {
-    number: "03",
-    title: "Keep your next move simple",
-    description: "Get a practical checklist for checking availability and booking with confidence.",
+    title: "Choose what works for you",
+    description: "Weigh the time, price, and stops to find a plan that fits the way you want to travel.",
+    icon: CheckCircle2,
   },
 ]
 
-const steps = [
-  { title: "Share your route", description: "Add the airports, dates, cabin, and points you already have." },
-  { title: "Compare the options", description: "See an illustrative cash-versus-miles breakdown with fees included." },
-  { title: "Choose your next move", description: "Use the booking checklist to confirm the details directly with the provider." },
+const benefits: InfoItem[] = [
+  {
+    title: "Start simple",
+    description: "Check one flight when you want a quick answer, with no account needed to search.",
+    icon: Plane,
+  },
+  {
+    title: "Make room for every stop",
+    description: "Plan a longer itinerary when your trip needs more than a single route.",
+    icon: Route,
+  },
+  {
+    title: "Keep the choice yours",
+    description: "See practical alternatives and decide which trade-offs feel right for you.",
+    icon: Compass,
+  },
 ]
+
+interface SectionHeadingProps {
+  id: string
+  eyebrow: string
+  title: string
+  description: string
+  reduceMotion: boolean
+}
+
+function SectionHeading({ id, eyebrow, title, description, reduceMotion }: SectionHeadingProps) {
+  return (
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.35 }}
+      transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeOut" }}
+      className="max-w-2xl"
+    >
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">{eyebrow}</p>
+      <h2 id={id} className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.045em] text-espresso sm:text-4xl">
+        {title}
+      </h2>
+      <p className="mt-3 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+        {description}
+      </p>
+    </motion.div>
+  )
+}
 
 export function TwoWaysIn() {
-  const shouldReduceMotion = Boolean(useReducedMotion())
-  const revealTransition = {
-    duration: shouldReduceMotion ? 0 : 0.55,
-    ease: [0.22, 1, 0.36, 1] as const,
-  }
+  const reduceMotion = Boolean(useReducedMotion())
+
   const staggerVariants = {
     hidden: {},
     visible: {
       transition: {
-        delayChildren: shouldReduceMotion ? 0 : 0.08,
-        staggerChildren: shouldReduceMotion ? 0 : 0.12,
+        delayChildren: reduceMotion ? 0 : 0.08,
+        staggerChildren: reduceMotion ? 0 : 0.12,
       },
     },
   }
+
   const itemVariants = {
-    hidden: { opacity: shouldReduceMotion ? 1 : 0, y: shouldReduceMotion ? 0 : 18 },
-    visible: { opacity: 1, y: 0, transition: revealTransition },
+    hidden: {
+      opacity: reduceMotion ? 1 : 0,
+      y: reduceMotion ? 0 : 18,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: reduceMotion ? 0 : 0.45,
+        ease: "easeOut",
+      },
+    },
   }
 
   return (
     <div className="flex flex-1 flex-col">
-      <section className="grid flex-1 items-center gap-12 py-12 sm:py-16 lg:grid-cols-[1.05fr_.95fr] lg:gap-14 lg:py-20">
+      <section aria-labelledby="home-heading" className="pb-14 pt-12 sm:pb-20 sm:pt-16 lg:pt-20">
         <motion.div
-          initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={revealTransition}
-          className="max-w-2xl"
+          transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeOut" }}
+          className="max-w-3xl"
         >
-          <Badge variant="outline" className="rounded-full border-brand-gold/30 bg-brand-gold/10 px-3 py-1 text-brand-gold">
-            <Compass aria-hidden="true" className="mr-2 size-3.5" />
-            A calmer way to travel further
-          </Badge>
-          <h1 className="mt-6 max-w-2xl font-display text-5xl leading-[0.98] tracking-[-0.055em] text-brand-paper sm:text-6xl lg:text-7xl">
-            Make every mile <span className="text-brand-gold">mean more.</span>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            Travel hacking · Made simple
+          </p>
+          <h1
+            id="home-heading"
+            className="mt-4 text-5xl font-semibold leading-[0.98] tracking-[-0.065em] text-espresso sm:text-6xl lg:text-7xl"
+          >
+            A Una Milla
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground sm:text-xl">
-            Same trip. Much less money. See how the points you already have could change the cost of your next flight.
+          <p className="mt-5 text-xl font-medium tracking-[-0.025em] text-espresso sm:text-2xl">
+            Same trip. Much less money.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button asChild variant="primary" size="lg" className="group min-h-12 rounded-full px-6">
-              <Link href="/quick">
-                Compare a flight
-                <ArrowRight data-icon="inline-end" aria-hidden="true" className="transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
-            <Button asChild variant="secondary" size="lg" className="min-h-12 rounded-full px-6">
-              <Link href="#how-it-works">See how it works</Link>
-            </Button>
-          </div>
-          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-2"><Check aria-hidden="true" className="size-4 text-brand-gold" /> Search without an account</span>
-            <span className="inline-flex items-center gap-2"><Check aria-hidden="true" className="size-4 text-brand-gold" /> Fees shown in the comparison</span>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={shouldReduceMotion ? false : { opacity: 0, y: 22, rotate: 1.5 }}
-          animate={{ opacity: 1, y: 0, rotate: 0 }}
-          transition={{ ...revealTransition, delay: shouldReduceMotion ? 0 : 0.12 }}
-          whileHover={shouldReduceMotion ? undefined : { y: -4 }}
-          className="relative mx-auto w-full max-w-xl"
-        >
-          <div aria-hidden="true" className="absolute -inset-6 rounded-[2.5rem] bg-brand-indigo/25 blur-3xl" />
-          <Card variant="cream" className="relative overflow-hidden rounded-[2rem] border-white/10 bg-card/90 shadow-2xl shadow-brand-ink/40 backdrop-blur">
-            <CardHeader className="flex-row items-start justify-between gap-4 p-6 pb-0 sm:p-8 sm:pb-0">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold">A sample comparison</p>
-                <CardTitle className="mt-2 text-2xl tracking-tight text-brand-paper">Your next route</CardTitle>
-              </div>
-              <Badge variant="outline" className="rounded-full border-white/10 bg-white/5 text-muted-foreground">Illustrative</Badge>
-            </CardHeader>
-            <CardContent className="p-6 pt-5 sm:p-8 sm:pt-6">
-              <div className="rounded-2xl border border-white/8 bg-brand-ink/60 p-5 sm:p-6">
-                <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
-                  <span>Madrid · MAD</span>
-                  <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-paper">Business</span>
-                  <span>J’burg · JNB</span>
-                </div>
-                <div className="mt-5 flex items-center gap-3" aria-hidden="true">
-                  <span className="size-2 rounded-full bg-brand-gold shadow-[0_0_18px_rgb(var(--brand-gold)/0.7)]" />
-                  <motion.div
-                    initial={shouldReduceMotion ? false : { scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ duration: shouldReduceMotion ? 0 : 0.8, delay: shouldReduceMotion ? 0 : 0.4, ease: "easeOut" }}
-                    className="h-px flex-1 origin-left bg-gradient-to-r from-brand-gold/70 via-brand-indigo to-brand-gold/70"
-                  />
-                  <Plane className="size-4 -rotate-12 text-brand-gold" />
-                  <span className="size-2 rounded-full bg-brand-gold shadow-[0_0_18px_rgb(var(--brand-gold)/0.7)]" />
-                </div>
-                <div className="mt-3 flex justify-between text-xs text-muted-foreground">
-                  <span>15 Nov 2026</span>
-                  <span>Round trip</span>
-                </div>
-              </div>
-
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-                  <p className="text-xs text-muted-foreground">Typical cash fare</p>
-                  <p className="mt-2 text-2xl font-semibold tabular-nums text-brand-paper">€2,840</p>
-                </div>
-                <div className="rounded-2xl border border-brand-gold/20 bg-brand-gold/[0.06] p-4">
-                  <p className="text-xs text-muted-foreground">Avios + taxes</p>
-                  <p className="mt-2 text-2xl font-semibold tabular-nums text-brand-gold">€612</p>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="mx-6 mb-6 mt-0 flex items-center justify-between gap-4 rounded-2xl border border-brand-gold/20 bg-brand-indigo/25 px-4 py-4 sm:mx-8 sm:mb-8">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">Estimated difference</p>
-                <p className="mt-1 text-xl font-semibold text-brand-paper">€2,228 less</p>
-              </div>
-              <ShieldCheck aria-hidden="true" className="size-6 shrink-0 text-brand-gold" />
-            </CardFooter>
-          </Card>
-          <p className="relative mt-3 text-center text-xs text-muted-foreground">
-            Example only · confirm live award availability and fees before booking.
+          <p className="mt-2 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+            Find a smarter way to get there. Start with one flight or plan every stop along the way.
           </p>
         </motion.div>
-      </section>
 
-      <section id="how-it-works" aria-labelledby="how-heading" className="scroll-mt-28 border-t border-white/8 py-14 sm:py-16">
-        <motion.div
-          initial={shouldReduceMotion ? false : "hidden"}
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.25 }}
-          variants={staggerVariants}
-          className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12"
-        >
-          <motion.div variants={itemVariants}>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold">A better way to plan</p>
-            <h2 id="how-heading" className="mt-3 max-w-md font-display text-3xl leading-tight tracking-tight text-brand-paper sm:text-4xl">
-              Clarity before you book.
-            </h2>
-            <p className="mt-4 max-w-md leading-7 text-muted-foreground">
-              A Una Milla brings the important numbers into one place, so you can decide with your eyes open.
-            </p>
-          </motion.div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {benefits.map(item => (
-              <motion.article
-                key={item.number}
-                variants={itemVariants}
-                className="rounded-2xl border border-white/8 bg-card/75 p-5 transition-colors hover:border-brand-gold/25 sm:p-6"
-              >
-                <span className="font-mono text-xs font-semibold tracking-[0.16em] text-brand-gold">{item.number}</span>
-                <h3 className="mt-5 text-lg font-semibold leading-snug text-brand-paper">{item.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.description}</p>
-              </motion.article>
-            ))}
-          </div>
-        </motion.div>
-      </section>
-
-      <section aria-labelledby="steps-heading" className="border-t border-white/8 py-14 sm:py-16">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold">Three simple steps</p>
-            <h2 id="steps-heading" className="mt-3 font-display text-3xl tracking-tight text-brand-paper sm:text-4xl">From route to next move.</h2>
-          </div>
-          <p className="max-w-sm text-sm leading-6 text-muted-foreground">Your search is private to your session. Sign in only when you want to save a trip.</p>
-        </div>
-        <motion.ol
-          initial={shouldReduceMotion ? false : "hidden"}
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={staggerVariants}
-          className="mt-8 grid gap-3 md:grid-cols-3"
-        >
-          {steps.map((step, index) => (
-            <motion.li key={step.title} variants={itemVariants} className="relative flex gap-4 rounded-2xl border border-white/8 bg-card/65 p-5 sm:p-6">
-              <span className="grid size-10 shrink-0 place-items-center rounded-full border border-brand-gold/25 bg-brand-gold/10 font-mono text-sm font-semibold text-brand-gold">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <div>
-                <h3 className="font-semibold text-brand-paper">{step.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.description}</p>
-              </div>
-            </motion.li>
-          ))}
-        </motion.ol>
-      </section>
-
-      <section id="start" aria-labelledby="start-heading" className="border-t border-white/8 py-14 sm:py-16">
-        <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold">Choose your starting point</p>
-            <h2 id="start-heading" className="mt-3 font-display text-3xl tracking-tight text-brand-paper sm:text-4xl">One flight or the whole journey.</h2>
-          </div>
-          <Link href="/chat" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-brand-gold">
-            Ask the travel assistant <ArrowRight aria-hidden="true" className="size-4" />
-          </Link>
-        </div>
-
+        <h2 className="sr-only">Choose your path</h2>
         <motion.div
           variants={staggerVariants}
-          initial={shouldReduceMotion ? false : "hidden"}
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          className="grid gap-4 md:grid-cols-2"
+          initial={reduceMotion ? false : "hidden"}
+          animate="visible"
+          className="mt-10 grid grid-cols-1 items-stretch gap-4 md:mt-14 md:grid-cols-2 md:gap-6"
         >
           {paths.map((path, index) => {
             const Icon = path.icon
@@ -274,25 +194,50 @@ export function TwoWaysIn() {
               <motion.div
                 key={path.href}
                 variants={itemVariants}
-                whileHover={shouldReduceMotion ? undefined : { y: -5 }}
+                whileHover={reduceMotion ? undefined : { y: -5 }}
                 transition={{ type: "spring", stiffness: 300, damping: 24 }}
                 className="h-full rounded-3xl"
               >
-                <Link href={path.href} className="group block h-full rounded-3xl" aria-label={`${path.title}. ${path.description}`}>
-                  <Card variant={path.variant} className="h-full min-h-[270px] justify-between rounded-3xl p-0 sm:min-h-[300px]">
+                <Link
+                  href={path.href}
+                  aria-label={`${path.title}. ${path.description}`}
+                  className="group block h-full rounded-3xl"
+                >
+                  <Card
+                    variant={path.variant}
+                    className="h-full min-h-[300px] justify-between transition-shadow duration-300 group-hover:shadow-xl sm:min-h-[330px]"
+                  >
                     <CardHeader className="flex-row items-center justify-between p-6 pb-0 sm:p-8 sm:pb-0">
-                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-current/50">0{index + 1}</span>
-                      <span className="grid size-12 place-items-center rounded-full border border-current/15 bg-brand-gold/10 text-brand-gold">
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-current/45">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <span className="grid size-12 place-items-center rounded-full border border-current/15 bg-primary/10 text-primary">
                         <Icon aria-hidden="true" className="size-5" strokeWidth={1.8} />
                       </span>
                     </CardHeader>
-                    <CardContent className="mt-8 px-6 pb-0 sm:px-8 sm:pb-0">
-                      <CardTitle className="text-3xl leading-tight tracking-tight sm:text-4xl">{path.title}</CardTitle>
-                      <CardDescription className="mt-3 max-w-lg text-base leading-7 text-current/70">{path.description}</CardDescription>
+
+                    <CardContent className="mt-10 px-6 pb-0 sm:px-8 sm:pb-0">
+                      <CardTitle className="text-3xl leading-tight sm:text-4xl">
+                        {path.title}
+                      </CardTitle>
+                      <CardDescription
+                        className={cn(
+                          "mt-3 max-w-md text-base leading-7 sm:text-lg",
+                          path.variant === "dark" ? "text-white/70" : "text-espresso/75",
+                        )}
+                      >
+                        {path.description}
+                      </CardDescription>
                     </CardContent>
+
                     <CardFooter className="mt-auto justify-between border-t border-current/15 px-6 pb-6 pt-5 sm:px-8 sm:pb-8">
-                      <span className="text-sm font-medium text-current/75">{path.footer}</span>
-                      <ArrowUpRight aria-hidden="true" className="size-5 text-brand-gold transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      <span className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
+                        {path.footer}
+                      </span>
+                      <ArrowUpRight
+                        aria-hidden="true"
+                        className="size-5 text-primary transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      />
                     </CardFooter>
                   </Card>
                 </Link>
@@ -302,21 +247,162 @@ export function TwoWaysIn() {
         </motion.div>
       </section>
 
-      <section className="mb-12 overflow-hidden rounded-[2rem] border border-brand-gold/20 bg-gradient-to-br from-brand-indigo/45 via-card to-card px-6 py-8 sm:mb-16 sm:px-10 sm:py-10">
-        <div className="flex flex-col gap-7 md:flex-row md:items-center md:justify-between">
-          <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold">Ready when you are</p>
-            <h2 className="mt-3 font-display text-3xl leading-tight tracking-tight text-brand-paper sm:text-4xl">The next great trip starts with one comparison.</h2>
-            <p className="mt-3 max-w-xl leading-7 text-muted-foreground">No account needed to explore. Just bring a route and the points you have.</p>
-          </div>
-          <Button asChild variant="primary" size="lg" className="group min-h-12 shrink-0 rounded-full px-6">
-            <Link href="/quick">
-              Start with a flight
-              <ArrowRight data-icon="inline-end" aria-hidden="true" className="transition-transform group-hover:translate-x-1" />
-            </Link>
-          </Button>
+      <section
+        aria-labelledby="how-it-works-heading"
+        className="border-t border-border py-14 sm:py-20"
+      >
+        <SectionHeading
+          id="how-it-works-heading"
+          eyebrow="How it works"
+          title="A clearer way to plan your route."
+          description="Bring the trip you have in mind. We’ll help you explore the options, one decision at a time."
+          reduceMotion={reduceMotion}
+        />
+
+        <motion.ol
+          variants={staggerVariants}
+          initial={reduceMotion ? false : "hidden"}
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          className="mt-9 grid gap-4 md:grid-cols-3"
+        >
+          {steps.map((step, index) => {
+            const Icon = step.icon
+
+            return (
+              <motion.li key={step.title} variants={itemVariants}>
+                <Card className="h-full gap-5 rounded-2xl border-border/80 bg-card p-5 shadow-none transition-shadow duration-300 hover:shadow-md sm:p-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold tracking-[0.12em] text-primary">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="grid size-10 place-items-center rounded-full bg-primary/10 text-primary">
+                      <Icon aria-hidden="true" className="size-5" strokeWidth={1.8} />
+                    </span>
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg leading-snug">{step.title}</CardTitle>
+                    <CardDescription className="mt-2 text-sm leading-6">
+                      {step.description}
+                    </CardDescription>
+                  </div>
+                </Card>
+              </motion.li>
+            )
+          })}
+        </motion.ol>
+      </section>
+
+      <section aria-labelledby="flexible-heading" className="py-3 sm:py-6">
+        <div className="grid gap-8 rounded-3xl bg-secondary p-6 sm:p-9 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:p-12">
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, x: -16 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeOut" }}
+            className="flex flex-col items-start"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+              Made for real trips
+            </p>
+            <h2
+              id="flexible-heading"
+              className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.045em] text-espresso sm:text-4xl"
+            >
+              Travel planning that meets you where you are.
+            </h2>
+            <p className="mt-3 text-base leading-7 text-muted-foreground">
+              Keep it quick when you know your destination. Add more detail when your journey has a few extra turns.
+            </p>
+            <Button
+              asChild
+              variant="secondary"
+              size="lg"
+              className="mt-6 min-h-11 transition-transform hover:-translate-y-0.5"
+            >
+              <Link href="/trip">
+                Plan a full trip
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </Link>
+            </Button>
+          </motion.div>
+
+          <motion.div
+            variants={staggerVariants}
+            initial={reduceMotion ? false : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="flex flex-col"
+          >
+            {benefits.map((benefit, index) => {
+              const Icon = benefit.icon
+
+              return (
+                <motion.div
+                  key={benefit.title}
+                  variants={itemVariants}
+                  className={cn(
+                    "flex gap-4 py-5 first:pt-0 last:pb-0",
+                    index > 0 && "border-t border-border/80",
+                  )}
+                >
+                  <span className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-full border border-border bg-background text-primary">
+                    <Icon aria-hidden="true" className="size-[18px]" strokeWidth={1.8} />
+                  </span>
+                  <div>
+                    <h3 className="font-semibold tracking-[-0.02em] text-espresso">
+                      {benefit.title}
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                      {benefit.description}
+                    </p>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </motion.div>
         </div>
       </section>
+
+      <motion.section
+        aria-labelledby="start-heading"
+        initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.25 }}
+        transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut" }}
+        className="my-14 flex flex-col items-start gap-6 rounded-3xl bg-espresso p-6 text-white sm:my-20 sm:flex-row sm:items-center sm:justify-between sm:p-10"
+      >
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            Ready when you are
+          </p>
+          <h2
+            id="start-heading"
+            className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-4xl"
+          >
+            Make your next route go further.
+          </h2>
+          <p className="mt-3 text-base leading-7 text-white/70">
+            Start with a destination and see where a smarter route can take you.
+          </p>
+        </div>
+        <Button
+          asChild
+          variant="primary"
+          size="lg"
+          className="min-h-12 shrink-0 transition-transform hover:-translate-y-0.5"
+        >
+          <Link href="/quick">
+            Find a flight
+            <ArrowRight aria-hidden="true" className="size-4" />
+          </Link>
+        </Button>
+      </motion.section>
+
+      <footer className="mt-auto flex flex-col items-center justify-between gap-2 border-t border-border py-6 text-xs font-medium tracking-[0.08em] text-muted-foreground sm:flex-row">
+        <span>@aunamilladetudestino</span>
+        <span>Travel hacking · Made simple</span>
+      </footer>
     </div>
   )
 }
