@@ -8,7 +8,7 @@ import { IconShare } from '@/components/ui/icons'
 import { FooterText } from '@/components/footer'
 import { ChatShareDialog } from '@/components/chat-share-dialog'
 import { useAIState, useActions, useUIState } from 'ai/rsc'
-import type { AI } from '@/lib/chat/actions'
+import type { AI, UIState } from '@/lib/chat/actions'
 import { nanoid } from 'nanoid'
 import { UserMessage } from './stocks/message'
 
@@ -74,7 +74,7 @@ export function ChatPanel({
                   index > 1 && 'hidden md:block'
                 }`}
                 onClick={async () => {
-                  setMessages(currentMessages => [
+                  setMessages((currentMessages: UIState) => [
                     ...currentMessages,
                     {
                       id: nanoid(),
@@ -86,7 +86,7 @@ export function ChatPanel({
                     example.message
                   )
 
-                  setMessages(currentMessages => [
+                  setMessages((currentMessages: UIState) => [
                     ...currentMessages,
                     responseMessage
                   ])

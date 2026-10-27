@@ -1,5 +1,6 @@
 import 'server-only'
 
+import type React from 'react'
 import {
   createAI,
   createStreamableUI,
@@ -39,6 +40,28 @@ import { getServerUser } from '@/lib/supabase/server'
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || ''
 })
+
+export type Message = {
+  role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool'
+  content: string
+  id: string
+  name?: string
+}
+
+export type AIState = {
+  chatId: string
+  messages: Message[]
+}
+
+export type UIState = {
+  id: string
+  display: React.ReactNode
+}[]
+
+export type UserMessageResponse = {
+  id: string
+  display: React.ReactNode
+}
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -121,7 +144,7 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
   }
 }
 
-async function submitUserMessage(content: string) {
+async function submitUserMessage(content: string): Promise<UserMessageResponse> {
   'use server'
 
   const aiState = getMutableAIState<typeof AI>()
@@ -393,23 +416,6 @@ Besides that, you can also chat with users and do some calculations if needed.`
   }
 }
 
-export type Message = {
-  role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool'
-  content: string
-  id: string
-  name?: string
-}
-
-export type AIState = {
-  chatId: string
-  messages: Message[]
-}
-
-export type UIState = {
-  id: string
-  display: React.ReactNode
-}[]
-
 export const AI = createAI<AIState, UIState>({
   actions: {
     submitUserMessage,
@@ -417,7 +423,7 @@ export const AI = createAI<AIState, UIState>({
   },
   initialUIState: [],
   initialAIState: { chatId: nanoid(), messages: [] },
-  unstable_onGetUIState: async () => {
+  onGetUIState: async () => {
     'use server'
 
     const user = await getServerUser()
@@ -433,8 +439,10 @@ export const AI = createAI<AIState, UIState>({
       return
     }
   },
-  unstable_onSetAIState: async ({ state, done }) => {
+  onSetAIState: async ({ state, done }) => {
     'use server'
+
+    if (!done) return
 
     const user = await getServerUser()
 
