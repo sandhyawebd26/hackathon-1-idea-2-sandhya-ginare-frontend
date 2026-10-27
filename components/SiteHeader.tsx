@@ -48,15 +48,20 @@ function SessionControls({ user, isLoading, isSigningOut, mobile = false, onSign
   return (
     <div className={cn("flex min-w-0 items-center gap-2", mobile && "w-full justify-between")}>
       <div className="flex min-w-0 items-center gap-2">
-        <span
-          aria-hidden="true"
-          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-semibold uppercase text-espresso"
+        <Link
+          href="/account"
+          className="flex min-w-0 items-center gap-2 rounded-full pr-1 transition-colors hover:bg-primary/10"
         >
-          {user.email.slice(0, 1)}
-        </span>
-        <span className="max-w-32 truncate text-sm font-medium text-foreground" title={user.email}>
-          {user.email}
-        </span>
+          <span
+            aria-hidden="true"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-semibold uppercase text-espresso"
+          >
+            {user.email.slice(0, 1)}
+          </span>
+          <span className="max-w-32 truncate text-sm font-medium text-foreground" title={user.email}>
+            {user.email}
+          </span>
+        </Link>
       </div>
       <Button
         type="button"
