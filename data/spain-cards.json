@@ -1,0 +1,38 @@
+{
+  "version": "2026-hackathon-illustrative",
+  "note": "Marketing summaries only. Verify earn rates and transfer partners on each issuer site before you apply.",
+  "cards": [
+    {
+      "id": "revolut-plus",
+      "name": "Revolut Plus",
+      "issuer": "Revolut",
+      "earnSummary": "Everyday spend in EUR; useful for separating travel money from your main bank.",
+      "transferNote": "Does not transfer to Avios directly. Pair with a points card when you are ready to move miles.",
+      "illustrative": true
+    },
+    {
+      "id": "revolut-premium",
+      "name": "Revolut Premium",
+      "issuer": "Revolut",
+      "earnSummary": "Higher FX allowances and travel perks; still not an Avios transfer card.",
+      "transferNote": "Use for FX and trip budgeting; earn Avios elsewhere.",
+      "illustrative": true
+    },
+    {
+      "id": "amex-gold-es",
+      "name": "American Express Gold (ES)",
+      "issuer": "American Express",
+      "earnSummary": "Membership Rewards-style earn on eligible spend (illustrative).",
+      "transferNote": "Often transfers to Iberia Plus / Avios at promotional ratios — confirm live offers.",
+      "illustrative": true
+    },
+    {
+      "id": "iberia-signature",
+      "name": "Iberia Visa Signature",
+      "issuer": "Iberia / partner bank",
+      "earnSummary": "Avios on Iberia and partner purchases (illustrative rate).",
+      "transferNote": "Miles land in Iberia Plus; good when you fly Oneworld from Spain.",
+      "illustrative": true
+    }
+  ]
+}
