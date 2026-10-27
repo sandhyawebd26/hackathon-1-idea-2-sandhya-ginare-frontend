@@ -14,6 +14,17 @@ export async function searchCashFare(input: CashSearchInput): Promise<CashQuote>
   return quote
 }
 
+async function fixtureQuote(input: CashSearchInput): Promise<CashQuote> {
+  const quote = await fixtureCashProvider.search(input)
+  if (quote) return quote
+  return {
+    amountEur: input.cabin === "business" ? 2400 : 750,
+    provenance: "sample",
+    note: "Illustrative cash fare fallback.",
+    source: "fixture",
+  }
+}
+
 export async function searchCashFareWithStatus(
   input: CashSearchInput,
 ): Promise<CashSearchResult> {
@@ -25,9 +36,8 @@ export async function searchCashFareWithStatus(
       return { quote: live, cashStatus: "ok" }
     }
 
-    const fixture = await fixtureCashProvider.search(input)
-    return { quote: fixture, cashStatus: "fixture_fallback" }
+    return { quote: await fixtureQuote(input), cashStatus: "fixture_fallback" }
   }
 
-  return { quote: await fixtureCashProvider.search(input), cashStatus: "ok" }
+  return { quote: await fixtureQuote(input), cashStatus: "ok" }
 }

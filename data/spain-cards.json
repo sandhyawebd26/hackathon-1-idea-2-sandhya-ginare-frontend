@@ -1,38 +1,77 @@
 {
-  "version": "2026-hackathon-illustrative",
-  "note": "Marketing summaries only. Verify earn rates and transfer partners on each issuer site before you apply.",
+  "updatedAt": "2026-10-27",
   "cards": [
+    {
+      "id": "revolut-standard",
+      "name": "Revolut Standard",
+      "issuer": "Revolut",
+      "monthlyFeeEur": 0,
+      "annualFeeEur": 0,
+      "earnRateDebit": 0.1,
+      "earnRateDebitLabel": "1 RevPoint per 10 EUR",
+      "transferPartners": ["Iberia Plus", "British Airways", "Qatar Airways"],
+      "transferRatio": "1:1",
+      "description": "Free account to start collecting RevPoints on daily purchases."
+    },
     {
       "id": "revolut-plus",
       "name": "Revolut Plus",
       "issuer": "Revolut",
-      "earnSummary": "Everyday spend in EUR; useful for separating travel money from your main bank.",
-      "transferNote": "Does not transfer to Avios directly. Pair with a points card when you are ready to move miles.",
-      "illustrative": true
+      "monthlyFeeEur": 3.99,
+      "annualFeeEur": 47.88,
+      "earnRateDebit": 0.143,
+      "earnRateDebitLabel": "1 RevPoint per 7 EUR",
+      "transferPartners": ["Iberia Plus", "British Airways", "Qatar Airways"],
+      "transferRatio": "1:1",
+      "description": "Entry-level paid tier with purchase protection and upgraded RevPoints rate."
     },
     {
       "id": "revolut-premium",
       "name": "Revolut Premium",
       "issuer": "Revolut",
-      "earnSummary": "Higher FX allowances and travel perks; still not an Avios transfer card.",
-      "transferNote": "Use for FX and trip budgeting; earn Avios elsewhere.",
-      "illustrative": true
+      "monthlyFeeEur": 9.99,
+      "annualFeeEur": 119.88,
+      "earnRateDebit": 0.25,
+      "earnRateDebitLabel": "1 RevPoint per 4 EUR",
+      "transferPartners": ["Iberia Plus", "British Airways", "Qatar Airways"],
+      "transferRatio": "1:1",
+      "description": "Popular for travelers with medical insurance and 1 point every 4 EUR spent."
     },
     {
-      "id": "amex-gold-es",
-      "name": "American Express Gold (ES)",
+      "id": "revolut-metal",
+      "name": "Revolut Metal",
+      "issuer": "Revolut",
+      "monthlyFeeEur": 15.99,
+      "annualFeeEur": 191.88,
+      "earnRateDebit": 0.5,
+      "earnRateDebitLabel": "1 RevPoint per 2 EUR",
+      "transferPartners": ["Iberia Plus", "British Airways", "Qatar Airways"],
+      "transferRatio": "1:1",
+      "description": "Heavy spender tier. 1 RevPoint for every 2 EUR on debit card transactions."
+    },
+    {
+      "id": "revolut-ultra",
+      "name": "Revolut Ultra",
+      "issuer": "Revolut",
+      "monthlyFeeEur": 55.0,
+      "annualFeeEur": 660.0,
+      "earnRateDebit": 1.0,
+      "earnRateDebitLabel": "1 RevPoint per 1 EUR",
+      "transferPartners": ["Iberia Plus", "British Airways", "Qatar Airways"],
+      "transferRatio": "1:1",
+      "description": "Top-tier premium metal card. 1 RevPoint per 1 EUR debit, 1.5 per 1 EUR credit."
+    },
+    {
+      "id": "amex-business-platinum",
+      "name": "American Express Business Platinum",
       "issuer": "American Express",
-      "earnSummary": "Membership Rewards-style earn on eligible spend (illustrative).",
-      "transferNote": "Often transfers to Iberia Plus / Avios at promotional ratios — confirm live offers.",
-      "illustrative": true
-    },
-    {
-      "id": "iberia-signature",
-      "name": "Iberia Visa Signature",
-      "issuer": "Iberia / partner bank",
-      "earnSummary": "Avios on Iberia and partner purchases (illustrative rate).",
-      "transferNote": "Miles land in Iberia Plus; good when you fly Oneworld from Spain.",
-      "illustrative": true
+      "monthlyFeeEur": 45.83,
+      "annualFeeEur": 550.0,
+      "earnRateDebit": 1.0,
+      "earnRateDebitLabel": "1 MR point per 1 EUR",
+      "transferPartners": ["Iberia Plus (5:4)", "British Airways (5:4)", "Qatar Airways"],
+      "transferRatio": "5:4 to Avios",
+      "description": "Spain Business Platinum card. 1 MR point per 1 EUR with welcome bonus and travel insurance."
     }
   ]
 }

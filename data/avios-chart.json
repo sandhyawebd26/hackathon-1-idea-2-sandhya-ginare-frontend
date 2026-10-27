@@ -12,11 +12,155 @@
     },
     {
       "origin": "MAD",
-      "destination": "LHR",
+      "destination": "JNB",
       "cabin": "economy",
       "program": "Iberia Avios",
+      "milesRequired": 25500,
+      "taxesEur": 156
+    },
+    {
+      "origin": "MAD",
+      "destination": "MIA",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 42500,
+      "taxesEur": 140
+    },
+    {
+      "origin": "MAD",
+      "destination": "MIA",
+      "cabin": "premium_economy",
+      "program": "Iberia Avios",
+      "milesRequired": 31750,
+      "taxesEur": 125
+    },
+    {
+      "origin": "MAD",
+      "destination": "MIA",
+      "cabin": "economy",
+      "program": "Iberia Avios",
+      "milesRequired": 21250,
+      "taxesEur": 95
+    },
+    {
+      "origin": "MAD",
+      "destination": "JFK",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 42500,
+      "taxesEur": 140
+    },
+    {
+      "origin": "MAD",
+      "destination": "JFK",
+      "cabin": "economy",
+      "program": "Iberia Avios",
+      "milesRequired": 21250,
+      "taxesEur": 95
+    },
+    {
+      "origin": "BCN",
+      "destination": "JFK",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 42500,
+      "taxesEur": 140
+    },
+    {
+      "origin": "BCN",
+      "destination": "JFK",
+      "cabin": "premium_economy",
+      "program": "LEVEL Avios",
+      "milesRequired": 25000,
+      "taxesEur": 115
+    },
+    {
+      "origin": "BCN",
+      "destination": "JFK",
+      "cabin": "economy",
+      "program": "LEVEL Avios",
+      "milesRequired": 17000,
+      "taxesEur": 85
+    },
+    {
+      "origin": "MAD",
+      "destination": "EZE",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 51000,
+      "taxesEur": 195
+    },
+    {
+      "origin": "MAD",
+      "destination": "EZE",
+      "cabin": "economy",
+      "program": "Iberia Avios",
+      "milesRequired": 25500,
+      "taxesEur": 135
+    },
+    {
+      "origin": "MAD",
+      "destination": "BOG",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 42500,
+      "taxesEur": 155
+    },
+    {
+      "origin": "MAD",
+      "destination": "MEX",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 42500,
+      "taxesEur": 165
+    },
+    {
+      "origin": "MAD",
+      "destination": "NRT",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 70000,
+      "taxesEur": 210
+    },
+    {
+      "origin": "MAD",
+      "destination": "NRT",
+      "cabin": "economy",
+      "program": "Iberia Avios",
+      "milesRequired": 35000,
+      "taxesEur": 145
+    },
+    {
+      "origin": "MAD",
+      "destination": "DOH",
+      "cabin": "business",
+      "program": "Qatar Avios",
+      "milesRequired": 35000,
+      "taxesEur": 180
+    },
+    {
+      "origin": "MAD",
+      "destination": "LHR",
+      "cabin": "economy",
+      "program": "British Airways Avios",
       "milesRequired": 7500,
       "taxesEur": 95
+    },
+    {
+      "origin": "MAD",
+      "destination": "LHR",
+      "cabin": "business",
+      "program": "British Airways Avios",
+      "milesRequired": 15000,
+      "taxesEur": 145
+    },
+    {
+      "origin": "BCN",
+      "destination": "MIA",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 42500,
+      "taxesEur": 140
     }
   ]
 }

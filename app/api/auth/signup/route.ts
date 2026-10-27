@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 
 import { createAdminClient } from "@/lib/supabase/admin"
+import { serverEnv } from "@/lib/server/env"
 
 export const dynamic = "force-dynamic"
 
@@ -39,12 +40,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Too many signup attempts. Try again in a minute." }, { status: 429 })
   }
 
+  const env = serverEnv()
   const admin = createAdminClient()
   if (!admin) {
-    return NextResponse.json(
-      { error: "Sign-up is not configured on the server. Add SUPABASE_SECRET_KEY in Vercel." },
-      { status: 503 },
-    )
+    const hint = !env.supabaseUrl
+      ? "Missing Supabase URL (NEXT_PUBLIC_SUPABASE_URL or NEXT_SUPABASE_URL on Vercel)."
+      : !env.supabaseSecret
+        ? "Missing SUPABASE_SECRET_KEY (service role) on Vercel."
+        : "Sign-up is not configured on the server."
+    return NextResponse.json({ error: hint }, { status: 503 })
   }
 
   const json = await request.json().catch(() => null)

@@ -4,7 +4,7 @@
     "node": "22.x"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_OPTIONS='-r ./scripts/patch-require.js' next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -12,6 +12,7 @@
     "preview": "next build && next start",
     "seed": "node -r dotenv/config ./scripts/seed.mjs",
     "type-check": "tsc --noEmit",
+    "smoke": "node scripts/smoke.mjs",
     "format:write": "prettier --write \"{app,lib,components}/**/*.{ts,tsx,mdx}\" --cache",
     "format:check": "prettier --check \"{app,lib,components}**/*.{ts,tsx,mdx}\" --cache"
   },

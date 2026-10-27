@@ -13,8 +13,46 @@ export type SpainCard = {
   description: string
 }
 
+type LegacySpainCardRow = {
+  id: string
+  name: string
+  issuer: string
+  earnSummary?: string
+  transferNote?: string
+  illustrative?: boolean
+}
+
+type RichSpainCardRow = SpainCard
+
+function isRichCard(row: LegacySpainCardRow | RichSpainCardRow): row is RichSpainCardRow {
+  return typeof (row as RichSpainCardRow).earnRateDebit === "number"
+}
+
+function normalizeCard(row: LegacySpainCardRow | RichSpainCardRow): SpainCard {
+  if (isRichCard(row)) {
+    return row
+  }
+
+  const earnSummary = row.earnSummary ?? "Illustrative earn rate. Verify with issuer."
+  const transferNote = row.transferNote ?? "Transfer partners vary. Confirm before moving points."
+
+  return {
+    id: row.id,
+    name: row.name,
+    issuer: row.issuer,
+    monthlyFeeEur: 0,
+    annualFeeEur: 0,
+    earnRateDebit: 0.25,
+    earnRateDebitLabel: earnSummary,
+    transferPartners: ["Iberia Plus", "British Airways", "Qatar Airways"],
+    transferRatio: "1:1",
+    description: transferNote,
+  }
+}
+
 export function listSpainCards(): SpainCard[] {
-  return cardsData.cards as SpainCard[]
+  const rows = cardsData.cards as Array<LegacySpainCardRow | RichSpainCardRow>
+  return rows.map(normalizeCard)
 }
 
 export function catalogueMeta() {

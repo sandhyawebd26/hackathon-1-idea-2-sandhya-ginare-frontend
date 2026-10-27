@@ -8,17 +8,71 @@
       "business": 412,
       "first": 520
     },
+    "MAD-MIA": {
+      "economy": 95,
+      "premium_economy": 125,
+      "business": 140,
+      "first": 220
+    },
+    "MAD-JFK": {
+      "economy": 95,
+      "premium_economy": 125,
+      "business": 140,
+      "first": 220
+    },
+    "BCN-JFK": {
+      "economy": 85,
+      "premium_economy": 115,
+      "business": 140,
+      "first": 220
+    },
+    "MAD-EZE": {
+      "economy": 135,
+      "premium_economy": 165,
+      "business": 195,
+      "first": 290
+    },
+    "MAD-BOG": {
+      "economy": 110,
+      "premium_economy": 135,
+      "business": 155,
+      "first": 240
+    },
+    "MAD-MEX": {
+      "economy": 115,
+      "premium_economy": 140,
+      "business": 165,
+      "first": 250
+    },
+    "MAD-NRT": {
+      "economy": 145,
+      "premium_economy": 175,
+      "business": 210,
+      "first": 320
+    },
+    "MAD-DOH": {
+      "economy": 120,
+      "premium_economy": 150,
+      "business": 180,
+      "first": 270
+    },
     "MAD-LHR": {
       "economy": 95,
       "premium_economy": 140,
-      "business": 210,
-      "first": 280
+      "business": 145,
+      "first": 210
+    },
+    "BCN-LHR": {
+      "economy": 95,
+      "premium_economy": 140,
+      "business": 145,
+      "first": 210
     }
   },
   "defaultEur": {
     "economy": 98,
     "premium_economy": 185,
-    "business": 395,
-    "first": 510
+    "business": 240,
+    "first": 380
   }
 }
