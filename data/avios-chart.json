@@ -1,0 +1,22 @@
+{
+  "version": "2026-hackathon-illustrative",
+  "note": "Chart prices only. Confirm award space on the airline. Not live inventory.",
+  "routes": [
+    {
+      "origin": "MAD",
+      "destination": "JNB",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 85000,
+      "taxesEur": 412
+    },
+    {
+      "origin": "MAD",
+      "destination": "LHR",
+      "cabin": "economy",
+      "program": "Iberia Avios",
+      "milesRequired": 7500,
+      "taxesEur": 95
+    }
+  ]
+}

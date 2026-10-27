@@ -2,8 +2,20 @@
 
 import Link from "next/link"
 import { motion, useReducedMotion } from "framer-motion"
-import { ArrowUpRight, Plane, Route, type LucideIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CalendarDays,
+  CheckCircle2,
+  Compass,
+  MapPin,
+  Plane,
+  Route,
+  Search,
+  type LucideIcon,
+} from "lucide-react"
+
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -12,6 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 type CardVariant = "cream" | "dark"
 
@@ -22,6 +35,12 @@ type PathOption = {
   footer: string
   icon: LucideIcon
   variant: CardVariant
+}
+
+type InfoItem = {
+  title: string
+  description: string
+  icon: LucideIcon
 }
 
 const paths: PathOption[] = [
@@ -43,29 +62,93 @@ const paths: PathOption[] = [
   },
 ]
 
-export function TwoWaysIn() {
-  const shouldReduceMotion = Boolean(useReducedMotion())
+const steps: InfoItem[] = [
+  {
+    title: "Start with your destination",
+    description: "Add a route, dates, and travellers—or begin with just the flight you have in mind.",
+    icon: MapPin,
+  },
+  {
+    title: "Explore your options",
+    description: "Compare routes and connections, then look at the details that matter to your trip.",
+    icon: Search,
+  },
+  {
+    title: "Choose what works for you",
+    description: "Weigh the time, price, and stops to find a plan that fits the way you want to travel.",
+    icon: CheckCircle2,
+  },
+]
 
-  const gridVariants = {
+const benefits: InfoItem[] = [
+  {
+    title: "Start simple",
+    description: "Check one flight when you want a quick answer, with no account needed to search.",
+    icon: Plane,
+  },
+  {
+    title: "Make room for every stop",
+    description: "Plan a longer itinerary when your trip needs more than a single route.",
+    icon: Route,
+  },
+  {
+    title: "Keep the choice yours",
+    description: "See practical alternatives and decide which trade-offs feel right for you.",
+    icon: Compass,
+  },
+]
+
+interface SectionHeadingProps {
+  id: string
+  eyebrow: string
+  title: string
+  description: string
+  reduceMotion: boolean
+}
+
+function SectionHeading({ id, eyebrow, title, description, reduceMotion }: SectionHeadingProps) {
+  return (
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.35 }}
+      transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeOut" }}
+      className="max-w-2xl"
+    >
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">{eyebrow}</p>
+      <h2 id={id} className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.045em] text-espresso sm:text-4xl">
+        {title}
+      </h2>
+      <p className="mt-3 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+        {description}
+      </p>
+    </motion.div>
+  )
+}
+
+export function TwoWaysIn() {
+  const reduceMotion = Boolean(useReducedMotion())
+
+  const staggerVariants = {
     hidden: {},
     visible: {
       transition: {
-        delayChildren: shouldReduceMotion ? 0 : 0.08,
-        staggerChildren: shouldReduceMotion ? 0 : 0.14,
+        delayChildren: reduceMotion ? 0 : 0.08,
+        staggerChildren: reduceMotion ? 0 : 0.12,
       },
     },
   }
 
-  const cardVariants = {
+  const itemVariants = {
     hidden: {
-      opacity: shouldReduceMotion ? 1 : 0,
-      y: shouldReduceMotion ? 0 : 20,
+      opacity: reduceMotion ? 1 : 0,
+      y: reduceMotion ? 0 : 18,
     },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: shouldReduceMotion ? 0 : 0.45,
+        duration: reduceMotion ? 0 : 0.45,
         ease: "easeOut",
       },
     },
@@ -73,30 +156,36 @@ export function TwoWaysIn() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <section className="flex flex-1 flex-col py-12 sm:py-16 lg:py-20">
+      <section aria-labelledby="home-heading" className="pb-14 pt-12 sm:pb-20 sm:pt-16 lg:pt-20">
         <motion.div
-          initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: shouldReduceMotion ? 0 : 0.45, ease: "easeOut" }}
-          className="max-w-2xl"
+          transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeOut" }}
+          className="max-w-3xl"
         >
-          <h1 className="text-5xl font-semibold leading-[0.98] tracking-[-0.065em] text-espresso sm:text-6xl lg:text-7xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            Travel hacking · Made simple
+          </p>
+          <h1
+            id="home-heading"
+            className="mt-4 text-5xl font-semibold leading-[0.98] tracking-[-0.065em] text-espresso sm:text-6xl lg:text-7xl"
+          >
             A Una Milla
           </h1>
           <p className="mt-5 text-xl font-medium tracking-[-0.025em] text-espresso sm:text-2xl">
             Same trip. Much less money.
           </p>
-          <p className="mt-2 text-base leading-7 text-muted-foreground sm:text-lg">
-            Travel hacking, made simple.
+          <p className="mt-2 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+            Find a smarter way to get there. Start with one flight or plan every stop along the way.
           </p>
         </motion.div>
 
         <h2 className="sr-only">Choose your path</h2>
         <motion.div
-          variants={gridVariants}
-          initial="hidden"
+          variants={staggerVariants}
+          initial={reduceMotion ? false : "hidden"}
           animate="visible"
-          className="mt-10 grid flex-1 grid-cols-1 items-stretch gap-4 md:mt-14 md:grid-cols-2 md:gap-6"
+          className="mt-10 grid grid-cols-1 items-stretch gap-4 md:mt-14 md:grid-cols-2 md:gap-6"
         >
           {paths.map((path, index) => {
             const Icon = path.icon
@@ -104,15 +193,8 @@ export function TwoWaysIn() {
             return (
               <motion.div
                 key={path.href}
-                variants={cardVariants}
-                whileHover={
-                  shouldReduceMotion
-                    ? undefined
-                    : {
-                        y: -5,
-                        boxShadow: "0 22px 50px rgba(35, 27, 21, 0.14)",
-                      }
-                }
+                variants={itemVariants}
+                whileHover={reduceMotion ? undefined : { y: -5 }}
                 transition={{ type: "spring", stiffness: 300, damping: 24 }}
                 className="h-full rounded-3xl"
               >
@@ -123,7 +205,7 @@ export function TwoWaysIn() {
                 >
                   <Card
                     variant={path.variant}
-                    className="h-full min-h-[300px] justify-between sm:min-h-[330px]"
+                    className="h-full min-h-[300px] justify-between transition-shadow duration-300 group-hover:shadow-xl sm:min-h-[330px]"
                   >
                     <CardHeader className="flex-row items-center justify-between p-6 pb-0 sm:p-8 sm:pb-0">
                       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-current/45">
@@ -141,9 +223,7 @@ export function TwoWaysIn() {
                       <CardDescription
                         className={cn(
                           "mt-3 max-w-md text-base leading-7 sm:text-lg",
-                          path.variant === "dark"
-                            ? "text-white/70"
-                            : "text-espresso/75",
+                          path.variant === "dark" ? "text-white/70" : "text-espresso/75",
                         )}
                       >
                         {path.description}
@@ -165,11 +245,164 @@ export function TwoWaysIn() {
             )
           })}
         </motion.div>
-
-        <footer className="mt-auto flex justify-center border-t border-border pt-6 text-xs font-medium tracking-[0.08em] text-muted-foreground sm:pt-8">
-          @aunamilladetudestino
-        </footer>
       </section>
+
+      <section
+        aria-labelledby="how-it-works-heading"
+        className="border-t border-border py-14 sm:py-20"
+      >
+        <SectionHeading
+          id="how-it-works-heading"
+          eyebrow="How it works"
+          title="A clearer way to plan your route."
+          description="Bring the trip you have in mind. We’ll help you explore the options, one decision at a time."
+          reduceMotion={reduceMotion}
+        />
+
+        <motion.ol
+          variants={staggerVariants}
+          initial={reduceMotion ? false : "hidden"}
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          className="mt-9 grid gap-4 md:grid-cols-3"
+        >
+          {steps.map((step, index) => {
+            const Icon = step.icon
+
+            return (
+              <motion.li key={step.title} variants={itemVariants}>
+                <Card className="h-full gap-5 rounded-2xl border-border/80 bg-card p-5 shadow-none transition-shadow duration-300 hover:shadow-md sm:p-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold tracking-[0.12em] text-primary">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="grid size-10 place-items-center rounded-full bg-primary/10 text-primary">
+                      <Icon aria-hidden="true" className="size-5" strokeWidth={1.8} />
+                    </span>
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg leading-snug">{step.title}</CardTitle>
+                    <CardDescription className="mt-2 text-sm leading-6">
+                      {step.description}
+                    </CardDescription>
+                  </div>
+                </Card>
+              </motion.li>
+            )
+          })}
+        </motion.ol>
+      </section>
+
+      <section aria-labelledby="flexible-heading" className="py-3 sm:py-6">
+        <div className="grid gap-8 rounded-3xl bg-secondary p-6 sm:p-9 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:p-12">
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, x: -16 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeOut" }}
+            className="flex flex-col items-start"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+              Made for real trips
+            </p>
+            <h2
+              id="flexible-heading"
+              className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.045em] text-espresso sm:text-4xl"
+            >
+              Travel planning that meets you where you are.
+            </h2>
+            <p className="mt-3 text-base leading-7 text-muted-foreground">
+              Keep it quick when you know your destination. Add more detail when your journey has a few extra turns.
+            </p>
+            <Button
+              asChild
+              variant="secondary"
+              size="lg"
+              className="mt-6 min-h-11 transition-transform hover:-translate-y-0.5"
+            >
+              <Link href="/trip">
+                Plan a full trip
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </Link>
+            </Button>
+          </motion.div>
+
+          <motion.div
+            variants={staggerVariants}
+            initial={reduceMotion ? false : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="flex flex-col"
+          >
+            {benefits.map((benefit, index) => {
+              const Icon = benefit.icon
+
+              return (
+                <motion.div
+                  key={benefit.title}
+                  variants={itemVariants}
+                  className={cn(
+                    "flex gap-4 py-5 first:pt-0 last:pb-0",
+                    index > 0 && "border-t border-border/80",
+                  )}
+                >
+                  <span className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-full border border-border bg-background text-primary">
+                    <Icon aria-hidden="true" className="size-[18px]" strokeWidth={1.8} />
+                  </span>
+                  <div>
+                    <h3 className="font-semibold tracking-[-0.02em] text-espresso">
+                      {benefit.title}
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                      {benefit.description}
+                    </p>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+        </div>
+      </section>
+
+      <motion.section
+        aria-labelledby="start-heading"
+        initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.25 }}
+        transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut" }}
+        className="my-14 flex flex-col items-start gap-6 rounded-3xl bg-espresso p-6 text-white sm:my-20 sm:flex-row sm:items-center sm:justify-between sm:p-10"
+      >
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            Ready when you are
+          </p>
+          <h2
+            id="start-heading"
+            className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-4xl"
+          >
+            Make your next route go further.
+          </h2>
+          <p className="mt-3 text-base leading-7 text-white/70">
+            Start with a destination and see where a smarter route can take you.
+          </p>
+        </div>
+        <Button
+          asChild
+          variant="primary"
+          size="lg"
+          className="min-h-12 shrink-0 transition-transform hover:-translate-y-0.5"
+        >
+          <Link href="/quick">
+            Find a flight
+            <ArrowRight aria-hidden="true" className="size-4" />
+          </Link>
+        </Button>
+      </motion.section>
+
+      <footer className="mt-auto flex flex-col items-center justify-between gap-2 border-t border-border py-6 text-xs font-medium tracking-[0.08em] text-muted-foreground sm:flex-row">
+        <span>@aunamilladetudestino</span>
+        <span>Travel hacking · Made simple</span>
+      </footer>
     </div>
   )
 }

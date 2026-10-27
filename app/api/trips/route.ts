@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { savedTripSchema } from "@/lib/search-validation"
+import { getServerUser } from "@/lib/supabase/server"
 import type { SavedTrip } from "@/lib/search-types"
 
 export const dynamic = "force-dynamic"
@@ -8,20 +9,28 @@ export const dynamic = "force-dynamic"
 const globalTrips = globalThis as typeof globalThis & {
   __aUnaMillaTrips?: Map<string, SavedTrip[]>
 }
-const tripsByDevice = globalTrips.__aUnaMillaTrips ??= new Map<string, SavedTrip[]>()
+const tripsByOwner = globalTrips.__aUnaMillaTrips ??= new Map<string, SavedTrip[]>()
 
 function getDeviceId(request: Request) {
   const deviceId = request.headers.get("x-device-id") ?? ""
   return /^[a-zA-Z0-9_-]{8,80}$/.test(deviceId) ? deviceId : null
 }
 
-export async function GET(request: Request) {
+async function getOwnerKey(request: Request) {
+  const user = await getServerUser()
+  if (user) return `user:${user.id}`
+
   const deviceId = getDeviceId(request)
-  if (!deviceId) {
+  return deviceId ? `device:${deviceId}` : null
+}
+
+export async function GET(request: Request) {
+  const ownerKey = await getOwnerKey(request)
+  if (!ownerKey) {
     return NextResponse.json({ error: "A valid device id is required." }, { status: 400 })
   }
 
-  const trips = [...(tripsByDevice.get(deviceId) ?? [])].sort(
+  const trips = [...(tripsByOwner.get(ownerKey) ?? [])].sort(
     (left, right) => Date.parse(right.savedAt) - Date.parse(left.savedAt),
   )
 
@@ -32,8 +41,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const deviceId = getDeviceId(request)
-  if (!deviceId) {
+  const ownerKey = await getOwnerKey(request)
+  if (!ownerKey) {
     return NextResponse.json({ error: "A valid device id is required." }, { status: 400 })
   }
 
@@ -48,9 +57,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "A valid saved trip is required." }, { status: 400 })
   }
 
-  const existingTrips = tripsByDevice.get(deviceId) ?? []
+  const existingTrips = tripsByOwner.get(ownerKey) ?? []
   const trips = [parsed.data, ...existingTrips.filter(trip => trip.id !== parsed.data.id)].slice(0, 50)
-  tripsByDevice.set(deviceId, trips)
+  tripsByOwner.set(ownerKey, trips)
 
   return NextResponse.json(
     { trip: parsed.data },

@@ -137,7 +137,7 @@ function mergeTrips(localTrips: SavedTrip[], remoteTrips: SavedTrip[]) {
   )
 }
 
-export async function saveTrip(trip: SavedTrip): Promise<SavedTrip> {
+export async function saveTrip(trip: SavedTrip, userId?: string): Promise<SavedTrip> {
   const deviceId = getOrCreateDeviceId()
   const localTrips = readLocalTrips(deviceId)
   const localVersion = mergeTrips(localTrips, [trip])
@@ -155,7 +155,7 @@ export async function saveTrip(trip: SavedTrip): Promise<SavedTrip> {
         "Content-Type": "application/json",
         "X-Device-Id": deviceId,
       },
-      body: JSON.stringify({ trip }),
+      body: JSON.stringify({ trip, ...(userId ? { userId } : {}) }),
     })
     writeLocalTrips(deviceId, mergeTrips(localVersion, [result.trip]))
     return result.trip
