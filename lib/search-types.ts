@@ -1,6 +1,13 @@
 export type SearchMode = "quick" | "trip"
 export type CabinClass = "economy" | "premium_economy" | "business" | "first"
-export type DataSource = "sample" | "cached" | "live"
+export type DataSource = "sample" | "cached" | "live" | "test"
+export type CashProviderStatus = "ok" | "fixture_fallback"
+
+export interface SearchMeta {
+  providerMode: string
+  cashSource: "fixture" | "duffel_test" | "scrappa"
+  cashStatus: CashProviderStatus
+}
 export type Recommendation = "use_miles" | "pay_cash"
 
 export interface SearchLeg {
@@ -76,6 +83,7 @@ export interface SearchResponse {
     hackType?: string
   }>
   disclaimer: string
+  meta?: SearchMeta
 }
 
 export interface ExplainResponse {

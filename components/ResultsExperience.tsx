@@ -11,20 +11,31 @@ import { PriceComparison } from "@/components/results/PriceComparison"
 import { ErrorBanner } from "@/components/results/ErrorBanner"
 import { ResultsActionBar } from "@/components/results/ResultsActionBar"
 import { ResultsSkeleton } from "@/components/results/ResultsSkeleton"
+import { SavedTripsGate } from "@/components/auth/SavedTripsGate"
 import { SavingsHero } from "@/components/results/SavingsHero"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { demoSearchRequest } from "@/lib/search-demo"
 import { explain, readPendingSearch, saveTrip, search, storePendingSearch } from "@/lib/api"
 import { formatTravelDate, routeSummary } from "@/lib/route-label"
 import type { SavedTrip, SearchResponse } from "@/lib/search-types"
+import { useAuthUser } from "@/lib/use-auth-user"
 
 export function ResultsExperience() {
   const [isCashExample, setIsCashExample] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [savedTripId, setSavedTripId] = useState<string | null>(null)
+  const [showSaveGate, setShowSaveGate] = useState(false)
+  const { user, isLoading: isAuthLoading } = useAuthUser()
 
   const {
     data: result,
@@ -68,7 +79,11 @@ export function ResultsExperience() {
   }
 
   async function handleSaveTrip() {
-    if (!result || isSaving || savedTripId) return
+    if (!result || isSaving || savedTripId || isAuthLoading) return
+    if (!user) {
+      setShowSaveGate(true)
+      return
+    }
     setIsSaving(true)
 
     const legs = result.route.legs ?? [{
@@ -89,7 +104,7 @@ export function ResultsExperience() {
     }
 
     try {
-      const savedTrip = await saveTrip(trip)
+      const savedTrip = await saveTrip(trip, user.id ?? undefined)
       setSavedTripId(savedTrip.id)
       toast.success("Trip saved", {
         description: "You can find it any time in Saved trips.",
@@ -130,6 +145,16 @@ export function ResultsExperience() {
       </div>
 
       <SavingsHero result={result} />
+
+      {result.meta?.cashStatus === "fixture_fallback" && (
+        <Alert className="border-amber-600/30 bg-amber-500/10 text-foreground">
+          <AlertTitle>Duffel unavailable — showing sample cash</AlertTitle>
+          <AlertDescription>
+            We could not fetch a Duffel test fare for this route, so the cash side uses bundled sample data. Award
+            pricing still comes from the Avios chart.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <PriceComparison
         result={result}
@@ -182,8 +207,19 @@ export function ResultsExperience() {
       <ResultsActionBar
         isSaved={savedTripId !== null}
         isSaving={isSaving}
+        isAuthLoading={isAuthLoading}
         onSave={handleSaveTrip}
       />
+
+      <Dialog open={showSaveGate} onOpenChange={setShowSaveGate}>
+        <DialogContent className="w-[calc(100%-2rem)] max-w-md border-0 bg-transparent p-0 shadow-none">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Sign in to save trips</DialogTitle>
+            <DialogDescription>Create an account to keep this comparison for later.</DialogDescription>
+          </DialogHeader>
+          <SavedTripsGate className="border-0 shadow-none" />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -24,15 +24,20 @@ import {
 } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
+import { SavedTripsGate } from "@/components/auth/SavedTripsGate"
 import { listTrips } from "@/lib/api"
 import { formatEuro, formatTravelDate } from "@/lib/route-label"
+import { useAuthUser } from "@/lib/use-auth-user"
 
 export function SavedTripsExperience() {
-  const { data: trips, error, isLoading, mutate } = useSWR("saved-trips", listTrips, {
-    revalidateOnFocus: false,
-  })
+  const { user, isLoading: isAuthLoading } = useAuthUser()
+  const { data: trips, error, isLoading, mutate } = useSWR(
+    user ? ["saved-trips", user.id ?? user.email] : null,
+    () => listTrips(),
+    { revalidateOnFocus: false },
+  )
 
-  if (isLoading) {
+  if (isAuthLoading || (user && isLoading)) {
     return (
       <div role="status" aria-live="polite" className="mx-auto flex w-full max-w-6xl flex-col gap-5 py-10 sm:py-14">
         <span className="sr-only">Loading saved trips</span>
@@ -42,6 +47,23 @@ export function SavedTripsExperience() {
           <Skeleton className="h-56 rounded-3xl" />
           <Skeleton className="h-56 rounded-3xl" />
         </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 py-10 sm:gap-10 sm:py-14">
+        <header className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Your travel notebook</p>
+          <h1 className="mt-3 text-4xl font-semibold tracking-[-0.055em] text-espresso sm:text-5xl">
+            Saved trips
+          </h1>
+          <p className="mt-3 text-base leading-7 text-muted-foreground sm:text-lg">
+            Keep the routes and savings you want to come back to.
+          </p>
+        </header>
+        <SavedTripsGate className="max-w-2xl" />
       </div>
     )
   }

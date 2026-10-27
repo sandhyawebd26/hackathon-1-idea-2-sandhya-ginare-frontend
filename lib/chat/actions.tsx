@@ -1,5 +1,6 @@
 import 'server-only'
 
+import type React from 'react'
 import {
   createAI,
   createStreamableUI,
@@ -34,11 +35,33 @@ import {
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat } from '@/lib/types'
-import { auth } from '@/auth'
+import { getServerUser } from '@/lib/supabase/server'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || ''
 })
+
+export type Message = {
+  role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool'
+  content: string
+  id: string
+  name?: string
+}
+
+export type AIState = {
+  chatId: string
+  messages: Message[]
+}
+
+export type UIState = {
+  id: string
+  display: React.ReactNode
+}[]
+
+export type UserMessageResponse = {
+  id: string
+  display: React.ReactNode
+}
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -121,7 +144,7 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
   }
 }
 
-async function submitUserMessage(content: string) {
+async function submitUserMessage(content: string): Promise<UserMessageResponse> {
   'use server'
 
   const aiState = getMutableAIState<typeof AI>()
@@ -393,23 +416,6 @@ Besides that, you can also chat with users and do some calculations if needed.`
   }
 }
 
-export type Message = {
-  role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool'
-  content: string
-  id: string
-  name?: string
-}
-
-export type AIState = {
-  chatId: string
-  messages: Message[]
-}
-
-export type UIState = {
-  id: string
-  display: React.ReactNode
-}[]
-
 export const AI = createAI<AIState, UIState>({
   actions: {
     submitUserMessage,
@@ -417,12 +423,12 @@ export const AI = createAI<AIState, UIState>({
   },
   initialUIState: [],
   initialAIState: { chatId: nanoid(), messages: [] },
-  unstable_onGetUIState: async () => {
+  onGetUIState: async () => {
     'use server'
 
-    const session = await auth()
+    const user = await getServerUser()
 
-    if (session && session.user) {
+    if (user) {
       const aiState = getAIState()
 
       if (aiState) {
@@ -433,16 +439,18 @@ export const AI = createAI<AIState, UIState>({
       return
     }
   },
-  unstable_onSetAIState: async ({ state, done }) => {
+  onSetAIState: async ({ state, done }) => {
     'use server'
 
-    const session = await auth()
+    if (!done) return
 
-    if (session && session.user) {
+    const user = await getServerUser()
+
+    if (user) {
       const { chatId, messages } = state
 
       const createdAt = new Date()
-      const userId = session.user.id as string
+      const userId = user.id
       const path = `/chat/${chatId}`
       const title = messages[0].content.substring(0, 100)
 
