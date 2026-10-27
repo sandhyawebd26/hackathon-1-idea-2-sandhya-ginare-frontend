@@ -19,9 +19,16 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ['var(--font-geist-sans)'],
-        mono: ['var(--font-geist-mono)']
+        mono: ['var(--font-geist-mono)'],
+        display: ['Georgia', 'Cambria', 'serif']
       },
       colors: {
+        brand: {
+          ink: 'rgb(var(--brand-ink) / <alpha-value>)',
+          indigo: 'rgb(var(--brand-indigo) / <alpha-value>)',
+          gold: 'rgb(var(--brand-gold) / <alpha-value>)',
+          paper: 'rgb(var(--brand-soft-white) / <alpha-value>)'
+        },
         cream: 'rgb(var(--background) / <alpha-value>)',
         espresso: 'rgb(var(--foreground) / <alpha-value>)',
         border: 'rgb(var(--border) / <alpha-value>)',

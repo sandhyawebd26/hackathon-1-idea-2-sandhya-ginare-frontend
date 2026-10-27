@@ -3,11 +3,11 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils'
 
-const cardVariants = cva('flex flex-col gap-6 rounded-3xl border shadow-sm', {
+const cardVariants = cva('flex flex-col gap-6 rounded-3xl border shadow-sm transition-[border-color,box-shadow,transform] duration-300', {
   variants: {
     variant: {
-      cream: 'border-border bg-background text-foreground',
-      dark: 'border-espresso bg-espresso text-white'
+      cream: 'border-border/80 bg-card text-card-foreground shadow-brand-ink/20',
+      dark: 'border-brand-indigo/70 bg-brand-indigo text-brand-paper shadow-lg shadow-brand-indigo/20'
     }
   },
   defaultVariants: {

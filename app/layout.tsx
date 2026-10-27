@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#F9F6F1'
+  themeColor: '#0E1220'
 }
 
 interface RootLayoutProps {
@@ -39,8 +39,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body className={cn('font-sans antialiased', GeistSans.variable, GeistMono.variable)}>
         <Providers
           attribute="class"
-          defaultTheme="light"
-          forcedTheme="light"
+          defaultTheme="dark"
+          forcedTheme="dark"
           enableSystem={false}
           disableTransitionOnChange
         >
