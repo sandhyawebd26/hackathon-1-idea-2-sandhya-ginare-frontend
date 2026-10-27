@@ -80,10 +80,6 @@ export function ResultsExperience() {
 
   async function handleSaveTrip() {
     if (!result || isSaving || savedTripId || isAuthLoading) return
-    if (!user) {
-      setShowSaveGate(true)
-      return
-    }
     setIsSaving(true)
 
     const legs = result.route.legs ?? [{
@@ -104,10 +100,12 @@ export function ResultsExperience() {
     }
 
     try {
-      const savedTrip = await saveTrip(trip, user.id ?? undefined)
+      const savedTrip = await saveTrip(trip, user?.id ?? undefined)
       setSavedTripId(savedTrip.id)
       toast.success("Trip saved", {
-        description: "You can find it any time in Saved trips.",
+        description: user
+          ? "You can find it any time in Saved trips."
+          : "Saved in this browser. Sign in later to sync across devices.",
       })
     } catch {
       toast.error("Could not save this trip", {

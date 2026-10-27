@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
-import { SavedTripsGate } from "@/components/auth/SavedTripsGate"
 import { listTrips } from "@/lib/api"
 import { formatEuro, formatTravelDate } from "@/lib/route-label"
 import { useAuthUser } from "@/lib/use-auth-user"
@@ -32,12 +31,12 @@ import { useAuthUser } from "@/lib/use-auth-user"
 export function SavedTripsExperience() {
   const { user, isLoading: isAuthLoading } = useAuthUser()
   const { data: trips, error, isLoading, mutate } = useSWR(
-    user ? ["saved-trips", user.id ?? user.email] : null,
+    ["saved-trips", user?.id ?? user?.email ?? "guest"],
     () => listTrips(),
     { revalidateOnFocus: false },
   )
 
-  if (isAuthLoading || (user && isLoading)) {
+  if (isAuthLoading || isLoading) {
     return (
       <div role="status" aria-live="polite" className="mx-auto flex w-full max-w-6xl flex-col gap-5 py-10 sm:py-14">
         <span className="sr-only">Loading saved trips</span>
@@ -47,23 +46,6 @@ export function SavedTripsExperience() {
           <Skeleton className="h-56 rounded-3xl" />
           <Skeleton className="h-56 rounded-3xl" />
         </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return (
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 py-10 sm:gap-10 sm:py-14">
-        <header className="max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Your travel notebook</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-[-0.055em] text-espresso sm:text-5xl">
-            Saved trips
-          </h1>
-          <p className="mt-3 text-base leading-7 text-muted-foreground sm:text-lg">
-            Keep the routes and savings you want to come back to.
-          </p>
-        </header>
-        <SavedTripsGate className="max-w-2xl" />
       </div>
     )
   }
@@ -99,6 +81,18 @@ export function SavedTripsExperience() {
           Keep the routes and savings you want to come back to.
         </p>
       </header>
+
+      {!user && (
+        <Alert className="border-primary/25 bg-primary/10 text-foreground">
+          <AlertTitle>Saved in this browser</AlertTitle>
+          <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <span>Trips stay on this device until you sign in to sync them later.</span>
+            <Button asChild variant="outline" size="sm" className="min-h-11 shrink-0">
+              <Link href="/login?next=/saved">Sign in to sync</Link>
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {savedTrips.length === 0 ? (
         <Empty className="rounded-3xl border border-dashed border-border bg-background px-5 py-12 sm:py-16">
