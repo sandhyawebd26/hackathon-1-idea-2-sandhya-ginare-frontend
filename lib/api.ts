@@ -4,13 +4,22 @@ import { savedTripSchema, searchRequestSchema } from "@/lib/search-validation"
 import type {
   ExplainResponse,
   SavedTrip,
+  SearchMeta,
   SearchRequest,
   SearchResponse,
 } from "@/lib/search-types"
 
 export const PENDING_SEARCH_KEY = "a-una-milla:pending-search"
 const SAVED_TRIPS_KEY_PREFIX = "a-una-milla:saved-trips:"
-const useFixtures = process.env.NEXT_PUBLIC_USE_FIXTURE === "true"
+/** When true, the browser skips /api/* and uses bundled demo fixtures only. */
+const useClientFixtures = process.env.NEXT_PUBLIC_USE_FIXTURE === "true"
+
+type SearchApiPayload = {
+  ok: boolean
+  data?: SearchResponse
+  meta?: SearchMeta
+  error?: string
+}
 
 const delay = (milliseconds = 360) =>
   new Promise(resolve => window.setTimeout(resolve, milliseconds))
@@ -32,17 +41,21 @@ async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export async function search(request: SearchRequest): Promise<SearchResponse> {
-  if (useFixtures) {
+  if (useClientFixtures) {
     await delay()
     return createSearchFixture(request)
   }
 
   try {
-    return await requestJson<SearchResponse>("/api/search", {
+    const payload = await requestJson<SearchApiPayload>("/api/search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
     })
+    if (!payload.ok || !payload.data) {
+      throw new Error(payload.error ?? "Search failed.")
+    }
+    return payload.meta ? { ...payload.data, meta: payload.meta } : payload.data
   } catch {
     await delay(420)
     return createSearchFixture(request)
@@ -50,7 +63,7 @@ export async function search(request: SearchRequest): Promise<SearchResponse> {
 }
 
 export async function explain(body: { response: SearchResponse }): Promise<ExplainResponse> {
-  if (useFixtures) {
+  if (useClientFixtures) {
     await delay()
     return body.response.explain
   }
@@ -143,7 +156,7 @@ export async function saveTrip(trip: SavedTrip, userId?: string): Promise<SavedT
   const localVersion = mergeTrips(localTrips, [trip])
   writeLocalTrips(deviceId, localVersion)
 
-  if (useFixtures) {
+  if (useClientFixtures) {
     await delay()
     return trip
   }
@@ -169,7 +182,7 @@ export async function listTrips(): Promise<SavedTrip[]> {
   const deviceId = getOrCreateDeviceId()
   const localTrips = readLocalTrips(deviceId)
 
-  if (useFixtures) {
+  if (useClientFixtures) {
     await delay()
     return localTrips
   }

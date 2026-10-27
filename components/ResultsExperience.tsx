@@ -146,6 +146,16 @@ export function ResultsExperience() {
 
       <SavingsHero result={result} />
 
+      {result.meta?.cashStatus === "fixture_fallback" && (
+        <Alert className="border-amber-600/30 bg-amber-500/10 text-foreground">
+          <AlertTitle>Duffel unavailable — showing sample cash</AlertTitle>
+          <AlertDescription>
+            We could not fetch a Duffel test fare for this route, so the cash side uses bundled sample data. Award
+            pricing still comes from the Avios chart.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <PriceComparison
         result={result}
         isCashExample={isCashExample}

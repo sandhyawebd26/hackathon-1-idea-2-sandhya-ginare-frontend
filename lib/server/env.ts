@@ -17,7 +17,18 @@ export function serverEnv() {
   const supabaseSecret =
     read("SUPABASE_SECRET_KEY") || read("NEXT_PUBLIC_SUPABASE_SECRET_KEY")
 
-  const providerMode = (read("PROVIDER_MODE") || "fixture") as ProviderMode
+  const providerModeRaw = read("PROVIDER_MODE")
+  let providerMode = (providerModeRaw || "fixture") as ProviderMode
+  if (
+    !providerModeRaw &&
+    duffel.startsWith("duffel_test_")
+  ) {
+    providerMode = "duffel_test"
+  }
+  if (providerMode === "duffel_test" && !duffel.startsWith("duffel_test_")) {
+    providerMode = "fixture"
+  }
+
   const authMode = (read("AUTH_MODE") || "guest") as AuthMode
 
   return {

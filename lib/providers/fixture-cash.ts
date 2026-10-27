@@ -5,7 +5,7 @@ const FIXTURE_CASH: Record<string, number> = {
   "MAD-LHR-economy": 186,
 }
 
-export const fixtureCashProvider: CashProvider = {
+export const fixtureCashProvider = {
   async search(input: CashSearchInput): Promise<CashQuote> {
     const key = `${input.origin}-${input.destination}-${input.cabin}`
     const amountEur = FIXTURE_CASH[key] ?? 980
