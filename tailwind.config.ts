@@ -22,6 +22,8 @@ module.exports = {
         mono: ['var(--font-geist-mono)']
       },
       colors: {
+        cream: 'rgb(var(--background) / <alpha-value>)',
+        espresso: 'rgb(var(--foreground) / <alpha-value>)',
         border: 'rgb(var(--border) / <alpha-value>)',
         input: 'rgb(var(--input) / <alpha-value>)',
         ring: 'rgb(var(--ring) / <alpha-value>)',

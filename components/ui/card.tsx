@@ -7,7 +7,7 @@ const cardVariants = cva('flex flex-col gap-6 rounded-3xl border shadow-sm', {
   variants: {
     variant: {
       cream: 'border-border bg-background text-foreground',
-      dark: 'border-foreground bg-foreground text-background'
+      dark: 'border-espresso bg-espresso text-white'
     }
   },
   defaultVariants: {
