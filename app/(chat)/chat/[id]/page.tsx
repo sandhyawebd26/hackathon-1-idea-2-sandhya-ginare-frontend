@@ -1,11 +1,10 @@
-import { type Metadata } from 'next'
-import { notFound, redirect } from 'next/navigation'
+import type { Metadata } from "next"
+import { notFound, redirect } from "next/navigation"
 
-import { auth } from '@/auth'
-import { getChat, getMissingKeys } from '@/app/actions'
-import { Chat } from '@/components/chat'
-import { AI } from '@/lib/chat/actions'
-import { Session } from '@/lib/types'
+import { getChat, getMissingKeys } from "@/app/actions"
+import { Chat } from "@/components/chat"
+import { AI } from "@/lib/chat/actions"
+import { getServerUser } from "@/lib/supabase/server"
 
 export interface ChatPageProps {
   params: {
@@ -13,39 +12,29 @@ export interface ChatPageProps {
   }
 }
 
-export async function generateMetadata({
-  params
-}: ChatPageProps): Promise<Metadata> {
-  const session = await auth()
+export async function generateMetadata({ params }: ChatPageProps): Promise<Metadata> {
+  const user = await getServerUser()
+  if (!user) return {}
 
-  if (!session?.user) {
-    return {}
-  }
-
-  const chat = await getChat(params.id, session.user.id)
+  const chat = await getChat(params.id, user.id)
   return {
-    title: chat?.title.toString().slice(0, 50) ?? 'Chat'
+    title: chat?.title.toString().slice(0, 50) ?? "Chat",
   }
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-  const session = (await auth()) as Session
+  const user = await getServerUser()
   const missingKeys = await getMissingKeys()
 
-  if (!session?.user) {
-    redirect(`/login?next=/chat/${params.id}`)
+  if (!user) {
+    redirect(`/login?next=${encodeURIComponent(`/chat/${params.id}`)}`)
   }
 
-  const userId = session.user.id as string
-  const chat = await getChat(params.id, userId)
+  const session = { user: { id: user.id, email: user.email ?? "" } }
+  const chat = await getChat(params.id, user.id)
 
-  if (!chat) {
-    redirect('/')
-  }
-
-  if (chat?.userId !== session?.user?.id) {
-    notFound()
-  }
+  if (!chat) redirect("/")
+  if (chat.userId !== user.id) notFound()
 
   return (
     <AI initialAIState={{ chatId: chat.id, messages: chat.messages }}>

@@ -1,18 +1,28 @@
-import { auth } from '@/auth'
-import LoginForm from '@/components/login-form'
-import { Session } from '@/lib/types'
-import { redirect } from 'next/navigation'
+import type { Metadata } from "next"
 
-export default async function LoginPage() {
-  const session = (await auth()) as Session
+import { AuthForm } from "@/components/auth/AuthForm"
+import { PageEnter } from "@/components/PageEnter"
 
-  if (session) {
-    redirect('/')
-  }
+export const metadata: Metadata = {
+  title: "Log in",
+  description: "Log in to return to your saved flight comparisons.",
+}
 
+interface LoginPageProps {
+  searchParams?: { next?: string | string[] }
+}
+
+function getNextPath(value?: string | string[]) {
+  const path = Array.isArray(value) ? value[0] : value
+  return path && path.startsWith("/") && !path.startsWith("//") && !path.includes("\\")
+    ? path
+    : "/saved"
+}
+
+export default function LoginPage({ searchParams }: LoginPageProps) {
   return (
-    <main className="flex flex-col p-4">
-      <LoginForm />
-    </main>
+    <PageEnter className="flex flex-1 flex-col">
+      <AuthForm mode="login" nextPath={getNextPath(searchParams?.next)} />
+    </PageEnter>
   )
 }

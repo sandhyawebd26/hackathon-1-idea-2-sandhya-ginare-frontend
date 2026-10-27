@@ -34,7 +34,7 @@ import {
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat } from '@/lib/types'
-import { auth } from '@/auth'
+import { getServerUser } from '@/lib/supabase/server'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || ''
@@ -420,9 +420,9 @@ export const AI = createAI<AIState, UIState>({
   unstable_onGetUIState: async () => {
     'use server'
 
-    const session = await auth()
+    const user = await getServerUser()
 
-    if (session && session.user) {
+    if (user) {
       const aiState = getAIState()
 
       if (aiState) {
@@ -436,13 +436,13 @@ export const AI = createAI<AIState, UIState>({
   unstable_onSetAIState: async ({ state, done }) => {
     'use server'
 
-    const session = await auth()
+    const user = await getServerUser()
 
-    if (session && session.user) {
+    if (user) {
       const { chatId, messages } = state
 
       const createdAt = new Date()
-      const userId = session.user.id as string
+      const userId = user.id
       const path = `/chat/${chatId}`
       const title = messages[0].content.substring(0, 100)
 
