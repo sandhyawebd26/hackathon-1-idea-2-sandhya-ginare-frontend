@@ -67,6 +67,42 @@
       "premium_economy": 140,
       "business": 145,
       "first": 210
+    },
+    "MAD-BIO": {
+      "economy": 25,
+      "premium_economy": 30,
+      "business": 35,
+      "first": 50
+    },
+    "MAD-BCN": {
+      "economy": 25,
+      "premium_economy": 30,
+      "business": 35,
+      "first": 50
+    },
+    "MAD-VLC": {
+      "economy": 25,
+      "premium_economy": 30,
+      "business": 35,
+      "first": 50
+    },
+    "MAD-AGP": {
+      "economy": 25,
+      "premium_economy": 30,
+      "business": 35,
+      "first": 50
+    },
+    "MAD-SVQ": {
+      "economy": 25,
+      "premium_economy": 30,
+      "business": 35,
+      "first": 50
+    },
+    "MAD-PMI": {
+      "economy": 25,
+      "premium_economy": 30,
+      "business": 35,
+      "first": 50
     }
   },
   "defaultEur": {

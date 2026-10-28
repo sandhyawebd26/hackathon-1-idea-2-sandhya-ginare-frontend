@@ -25,7 +25,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { demoSearchRequest } from "@/lib/search-demo"
-import { explain, readPendingSearch, saveTrip, search, storePendingSearch } from "@/lib/api"
+import {
+  explain,
+  pendingSearchCacheKey,
+  readPendingSearch,
+  saveTrip,
+  search,
+  storePendingSearch,
+} from "@/lib/api"
 import { formatTravelDate, routeSummary } from "@/lib/route-label"
 import type { SavedTrip, SearchResponse } from "@/lib/search-types"
 import { useAuthUser } from "@/lib/use-auth-user"
@@ -37,18 +44,21 @@ export function ResultsExperience() {
   const [showSaveGate, setShowSaveGate] = useState(false)
   const { user, isLoading: isAuthLoading } = useAuthUser()
 
+  const [routeKey] = useState(() => pendingSearchCacheKey(readPendingSearch()))
+
   const {
     data: result,
     error,
     isLoading,
+    isValidating,
     mutate,
   } = useSWR<SearchResponse>(
-    ["search-results", isCashExample],
+    ["search-results", routeKey, isCashExample],
     () => {
       const request = readPendingSearch()
       return search({ ...request, payCash: isCashExample || undefined })
     },
-    { revalidateOnFocus: false, shouldRetryOnError: false },
+    { revalidateOnFocus: false, shouldRetryOnError: false, keepPreviousData: false },
   )
 
   const { data: explanation } = useSWR(
@@ -116,8 +126,10 @@ export function ResultsExperience() {
     }
   }
 
-  if (isLoading || !result) {
-    if (error) {
+  const showResultsSkeleton = isLoading || isValidating || !result
+
+  if (showResultsSkeleton) {
+    if (error && !isValidating) {
       return (
         <div className="mx-auto w-full max-w-6xl py-12">
           <ErrorBanner

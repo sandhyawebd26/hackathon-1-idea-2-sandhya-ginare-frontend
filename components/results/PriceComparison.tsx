@@ -16,12 +16,14 @@ import { cn } from "@/lib/utils"
 interface PriceComparisonProps {
   result: SearchResponse
   isCashExample: boolean
+  isRefreshing?: boolean
   onToggleCashExample: () => void
 }
 
 export function PriceComparison({
   result,
   isCashExample,
+  isRefreshing = false,
   onToggleCashExample,
 }: PriceComparisonProps) {
   return (
@@ -35,8 +37,15 @@ export function PriceComparison({
             Normal vs. Hacked
           </h2>
         </div>
-        <Button type="button" variant="link" size="sm" className="min-h-11 px-2" onClick={onToggleCashExample}>
-          {isCashExample ? "Return to miles example" : "Show pay-cash example"}
+        <Button
+          type="button"
+          variant="link"
+          size="sm"
+          className="min-h-11 px-2"
+          disabled={isRefreshing}
+          onClick={onToggleCashExample}
+        >
+          {isRefreshing ? "Updating…" : isCashExample ? "Return to miles example" : "Show pay-cash example"}
         </Button>
       </div>
 
@@ -72,14 +81,16 @@ export function PriceComparison({
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="text-xl text-white">
-                {isCashExample ? "Pay cash" : "Hacked"}
+                {result.savings.recommendation === "pay_cash" || isCashExample ? "Pay cash" : "Hacked"}
               </CardTitle>
               <Badge className="rounded-full border border-white/20 bg-white/10 text-white">
-                {result.hacked.breakdown.program}
+                {result.savings.recommendation === "pay_cash" ? "Preserve Miles" : result.hacked.breakdown.program}
               </Badge>
             </div>
             <CardDescription className="text-white/65">
-              {result.hacked.hackTitle}
+              {result.savings.recommendation === "pay_cash"
+                ? "Paying cash is more economical than burning award miles"
+                : result.hacked.hackTitle}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col gap-2">
@@ -89,10 +100,12 @@ export function PriceComparison({
             <p className="text-sm text-white/70">
               {result.hacked.breakdown.milesRequired > 0
                 ? `${result.hacked.breakdown.milesRequired.toLocaleString("en-GB")} miles + ${formatEuro(result.hacked.breakdown.taxesEur)} taxes`
-                : "No miles required"}
+                : "0 miles deducted"}
             </p>
             <p className="mt-2 text-sm leading-6 text-white/65">
-              {result.hacked.label}
+              {result.savings.recommendation === "pay_cash"
+                ? "Standard cash checkout preserves your points balance for high-value sweet spots."
+                : result.hacked.label}
             </p>
           </CardContent>
           <CardFooter>

@@ -9,7 +9,12 @@ export const metadata: Metadata = {
 }
 
 interface LoginPageProps {
-  searchParams?: { next?: string | string[] }
+  searchParams?: { next?: string | string[]; email?: string | string[] }
+}
+
+function getEmail(value?: string | string[]) {
+  const email = Array.isArray(value) ? value[0] : value
+  return email?.trim().toLowerCase() ?? ""
 }
 
 function getNextPath(value?: string | string[]) {
@@ -22,7 +27,11 @@ function getNextPath(value?: string | string[]) {
 export default function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <PageEnter className="flex flex-1 flex-col">
-      <AuthForm mode="login" nextPath={getNextPath(searchParams?.next)} />
+      <AuthForm
+        mode="login"
+        nextPath={getNextPath(searchParams?.next)}
+        initialEmail={getEmail(searchParams?.email)}
+      />
     </PageEnter>
   )
 }

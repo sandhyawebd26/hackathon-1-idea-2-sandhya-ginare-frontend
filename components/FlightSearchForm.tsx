@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useState, useTransition, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import {
   ArrowRight,
@@ -48,6 +48,7 @@ function initialLegs(mode: SearchMode): FormLeg[] {
 
 export function FlightSearchForm({ mode }: FlightSearchFormProps) {
   const router = useRouter()
+  const [isNavigating, startNavigation] = useTransition()
   const [legs, setLegs] = useState<FormLeg[]>(() => initialLegs(mode))
   const [cabin, setCabin] = useState<CabinClass>("business")
   const [adults, setAdults] = useState(1)
@@ -161,7 +162,9 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
 
     setErrors({})
     storePendingSearch(parsed.data)
-    router.push("/results")
+    startNavigation(() => {
+      router.push("/results")
+    })
   }
 
   return (
@@ -474,10 +477,20 @@ export function FlightSearchForm({ mode }: FlightSearchFormProps) {
               type="submit"
               variant="primary"
               size="lg"
+              disabled={isNavigating}
               className="w-full sm:flex-1 h-12 rounded-2xl text-base font-semibold shadow-md gap-2"
             >
-              <span>{mode === "quick" ? "Compare Flights & Calculate Savings" : "Calculate Full Trip Savings"}</span>
-              <ArrowRight className="size-4" />
+              {isNavigating ? (
+                <>
+                  <span className="size-4 animate-spin rounded-full border-2 border-espresso/30 border-t-espresso" />
+                  <span>Running comparison…</span>
+                </>
+              ) : (
+                <>
+                  <span>{mode === "quick" ? "Compare Flights & Calculate Savings" : "Calculate Full Trip Savings"}</span>
+                  <ArrowRight className="size-4" />
+                </>
+              )}
             </Button>
           </div>
         </form>

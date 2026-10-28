@@ -22,7 +22,7 @@ type SearchApiPayload = {
 }
 
 const delay = (milliseconds = 360) =>
-  new Promise(resolve => window.setTimeout(resolve, milliseconds))
+  new Promise(resolve => setTimeout(resolve, milliseconds))
 
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
@@ -150,6 +150,12 @@ export function readPendingSearch(): SearchRequest {
   }
 }
 
+/** Stable SWR key so a new search does not reuse cached results from session storage. */
+export function pendingSearchCacheKey(request: SearchRequest): string {
+  const { mode, legs, cabin, adults, flexibleDates, payCash } = request
+  return JSON.stringify({ mode, legs, cabin, adults, flexibleDates, payCash: payCash ?? false })
+}
+
 function storageKey(deviceId: string) {
   return `${SAVED_TRIPS_KEY_PREFIX}${deviceId}`
 }
@@ -217,6 +223,7 @@ export async function saveTrip(trip: SavedTrip, userId?: string): Promise<SavedT
 }
 
 export async function listTrips(): Promise<SavedTrip[]> {
+  if (typeof window === "undefined") return []
   const deviceId = getOrCreateDeviceId()
   const localTrips = readLocalTrips(deviceId)
 

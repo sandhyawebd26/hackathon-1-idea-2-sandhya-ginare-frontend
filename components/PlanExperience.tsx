@@ -44,6 +44,7 @@ import {
   computeEarningPlan,
 } from "@/lib/plan/earning-plan"
 import { presetRoutes } from "@/lib/plan/preset-routes"
+import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
 export function PlanExperience() {
@@ -53,7 +54,7 @@ export function PlanExperience() {
   const [isCustomTarget, setIsCustomTarget] = useState<boolean>(false)
   const [currentBalance, setCurrentBalance] = useState<number>(20000)
   const [monthlySpend, setMonthlySpend] = useState<number>(2000)
-  const { data: catalogue } = useSWR("spain-cards", () => listCards(), {
+  const { data: catalogue, isLoading: isCardsLoading } = useSWR("spain-cards", () => listCards(), {
     revalidateOnFocus: false,
   })
 
@@ -192,22 +193,30 @@ export function PlanExperience() {
             <FieldGroup className="mt-4 gap-5">
               <Field>
                 <FieldLabel htmlFor="card-selector">Credit / debit card plan (Spain)</FieldLabel>
-                <Select value={selectedCardId} onValueChange={setSelectedCardId}>
-                  <SelectTrigger id="card-selector" className="h-11 rounded-xl bg-background text-base">
-                    <SelectValue placeholder="Select card tier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {cardRates.map(card => (
-                        <SelectItem key={card.id} value={card.id}>
-                          {card.name} ({card.earnRateDebitLabel}) — {cardFeeLabel(card)}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                {isCardsLoading ? (
+                  <Skeleton className="h-11 w-full rounded-xl" aria-label="Loading card catalogue" />
+                ) : (
+                  <Select value={selectedCardId} onValueChange={setSelectedCardId}>
+                    <SelectTrigger id="card-selector" className="h-11 rounded-xl bg-background text-base">
+                      <SelectValue placeholder="Select card tier" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {cardRates.map(card => (
+                          <SelectItem key={card.id} value={card.id}>
+                            {card.name} ({card.earnRateDebitLabel}) — {cardFeeLabel(card)}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                )}
                 <FieldDescription>
-                  {activeCard ? cardPartnerSummary(activeCard) : "Loading cards…"}
+                  {isCardsLoading
+                    ? "Loading card earn rates…"
+                    : activeCard
+                      ? cardPartnerSummary(activeCard)
+                      : "Select a card to see earn partners."}
                 </FieldDescription>
               </Field>
 

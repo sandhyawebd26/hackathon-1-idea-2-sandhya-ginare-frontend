@@ -38,6 +38,7 @@ export async function runSearch(request: SearchRequest): Promise<RunSearchResult
     cashEur: cash.amountEur,
     origin,
     destination,
+    legs: request.legs,
     cabin: request.cabin,
     provenanceCash: cash.provenance,
     forcePayCash: request.payCash,

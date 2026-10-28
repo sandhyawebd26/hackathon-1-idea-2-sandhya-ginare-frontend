@@ -93,3 +93,12 @@
     scroll-behavior: auto;
   }
 }
+
+@keyframes route-progress {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(420%);
+  }
+}

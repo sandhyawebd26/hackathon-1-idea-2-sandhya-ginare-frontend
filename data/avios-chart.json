@@ -161,6 +161,102 @@
       "program": "Iberia Avios",
       "milesRequired": 42500,
       "taxesEur": 140
+    },
+    {
+      "origin": "MAD",
+      "destination": "BIO",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 9000,
+      "taxesEur": 35
+    },
+    {
+      "origin": "MAD",
+      "destination": "BIO",
+      "cabin": "economy",
+      "program": "Iberia Avios",
+      "milesRequired": 4500,
+      "taxesEur": 25
+    },
+    {
+      "origin": "MAD",
+      "destination": "BCN",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 9000,
+      "taxesEur": 35
+    },
+    {
+      "origin": "MAD",
+      "destination": "BCN",
+      "cabin": "economy",
+      "program": "Iberia Avios",
+      "milesRequired": 4500,
+      "taxesEur": 25
+    },
+    {
+      "origin": "MAD",
+      "destination": "VLC",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 9000,
+      "taxesEur": 35
+    },
+    {
+      "origin": "MAD",
+      "destination": "VLC",
+      "cabin": "economy",
+      "program": "Iberia Avios",
+      "milesRequired": 4500,
+      "taxesEur": 25
+    },
+    {
+      "origin": "MAD",
+      "destination": "AGP",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 9000,
+      "taxesEur": 35
+    },
+    {
+      "origin": "MAD",
+      "destination": "AGP",
+      "cabin": "economy",
+      "program": "Iberia Avios",
+      "milesRequired": 4500,
+      "taxesEur": 25
+    },
+    {
+      "origin": "MAD",
+      "destination": "SVQ",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 9000,
+      "taxesEur": 35
+    },
+    {
+      "origin": "MAD",
+      "destination": "SVQ",
+      "cabin": "economy",
+      "program": "Iberia Avios",
+      "milesRequired": 4500,
+      "taxesEur": 25
+    },
+    {
+      "origin": "MAD",
+      "destination": "PMI",
+      "cabin": "business",
+      "program": "Iberia Avios",
+      "milesRequired": 9000,
+      "taxesEur": 35
+    },
+    {
+      "origin": "MAD",
+      "destination": "PMI",
+      "cabin": "economy",
+      "program": "Iberia Avios",
+      "milesRequired": 4500,
+      "taxesEur": 25
     }
   ]
 }
