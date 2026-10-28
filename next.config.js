@@ -22,10 +22,20 @@ const publicSupabaseAnon = pickEnv(
 )
 const publicUseFixture = pickEnv('NEXT_PUBLIC_USE_FIXTURE', 'NEXT_USE_FIXTURE')
 
+// Values are inlined into the client bundle at build time (Vercel only needs NEXT_SUPABASE_*).
+function supabaseClientEnv(url, anon) {
+  if (!url || !anon) return {}
+  return {
+    NEXT_PUBLIC_SUPABASE_URL: url,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: anon,
+    NEXT_SUPABASE_URL: url,
+    NEXT_SUPABASE_ANON_KEY: anon,
+  }
+}
+
 module.exports = {
   env: {
-    ...(publicSupabaseUrl ? { NEXT_PUBLIC_SUPABASE_URL: publicSupabaseUrl } : {}),
-    ...(publicSupabaseAnon ? { NEXT_PUBLIC_SUPABASE_ANON_KEY: publicSupabaseAnon } : {}),
+    ...supabaseClientEnv(publicSupabaseUrl, publicSupabaseAnon),
     ...(publicUseFixture ? { NEXT_PUBLIC_USE_FIXTURE: publicUseFixture } : {}),
   },
   images: {

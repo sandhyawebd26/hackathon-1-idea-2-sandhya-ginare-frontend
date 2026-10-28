@@ -8,7 +8,7 @@ import { useActions, useUIState } from 'ai/rsc'
 import { UserMessage } from './stocks/message'
 import { type AI, type UIState } from '@/lib/chat/actions'
 import { Button } from '@/components/ui/button'
-import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
+import { IconArrowElbow, IconPlus, IconSpinner } from '@/components/ui/icons'
 import {
   Tooltip,
   TooltipContent,
@@ -30,6 +30,7 @@ export function PromptForm({
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -50,7 +51,9 @@ export function PromptForm({
 
         const value = input.trim()
         setInput('')
-        if (!value) return
+        if (!value || isSubmitting) return
+
+        setIsSubmitting(true)
 
         // Optimistically add user message UI
         setMessages((currentMessages: UIState) => [
@@ -61,9 +64,12 @@ export function PromptForm({
           }
         ])
 
-        // Submit and get response message
-        const responseMessage = await submitUserMessage(value)
-        setMessages((currentMessages: UIState) => [...currentMessages, responseMessage])
+        try {
+          const responseMessage = await submitUserMessage(value)
+          setMessages((currentMessages: UIState) => [...currentMessages, responseMessage])
+        } finally {
+          setIsSubmitting(false)
+        }
       }}
     >
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
@@ -101,9 +107,9 @@ export function PromptForm({
         <div className="absolute right-0 top-[13px] sm:right-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button type="submit" size="icon" disabled={input === ''}>
-                <IconArrowElbow />
-                <span className="sr-only">Send message</span>
+              <Button type="submit" size="icon" disabled={input === '' || isSubmitting}>
+                {isSubmitting ? <IconSpinner /> : <IconArrowElbow />}
+                <span className="sr-only">{isSubmitting ? 'Sending message' : 'Send message'}</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>Send message</TooltipContent>
