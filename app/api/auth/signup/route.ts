@@ -16,6 +16,20 @@ const hits = globalThis as typeof globalThis & {
 }
 const byIp = hits.__signupRate ??= new Map<string, number[]>()
 
+function signupErrorMessage(message: string): string {
+  const msg = message.toLowerCase()
+  if (msg.includes("invalid api key") || msg.includes("invalid jwt") || msg.includes("bad_jwt")) {
+    return "Server secret key is wrong for this Supabase project. On Vercel set SUPABASE_SECRET_KEY to the service role / secret key from Supabase → Settings → API (project fcoqtk…), then redeploy."
+  }
+  if (msg.includes("signup") && msg.includes("disabled")) {
+    return "Email sign-up is disabled in Supabase. Enable Authentication → Providers → Email."
+  }
+  if (msg.includes("not authorized") || msg.includes("forbidden")) {
+    return "The server key lacks permission to create users. Use the service role / secret key, not the anon key."
+  }
+  return message.length <= 220 ? message : "Could not create the account. Try again."
+}
+
 function rateLimited(ip: string) {
   const now = Date.now()
   const windowMs = 60_000
@@ -65,11 +79,12 @@ export async function POST(request: Request) {
   })
 
   if (error) {
+    console.error("[signup] createUser failed:", error.message)
     const msg = error.message.toLowerCase()
     if (msg.includes("already") || msg.includes("registered")) {
       return NextResponse.json({ error: "This email already has an account. Try logging in." }, { status: 409 })
     }
-    return NextResponse.json({ error: "Could not create the account. Try again." }, { status: 400 })
+    return NextResponse.json({ error: signupErrorMessage(error.message) }, { status: 400 })
   }
 
   return NextResponse.json({ ok: true, userId: data.user?.id ?? null })

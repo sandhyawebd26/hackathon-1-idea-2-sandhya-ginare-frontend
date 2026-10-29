@@ -18,6 +18,7 @@ export async function GET() {
       integrations: {
         duffel: env.duffel,
         supabase: env.supabaseUrl && env.supabaseAnon,
+        supabaseSignup: env.supabaseUrl && env.supabaseSecret,
         gemini: env.gemini,
         groq: env.groq,
       },
