@@ -13,5 +13,10 @@ export function createAdminClient() {
       autoRefreshToken: false,
       persistSession: false,
     },
+    global: {
+      headers: {
+        "X-Client-Info": "a-una-milla-admin",
+      },
+    },
   })
 }
